@@ -1,0 +1,11 @@
+GC Receivable			xxx   
+Rent Receivable				xxx
+
+
+Paid Before billing date
+GC Receivable			xxx   
+Unearned   			        xxx
+
+
+Unearned Rent Income        xxx
+Rent Receivable			xxx

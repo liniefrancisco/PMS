@@ -1,0 +1,258 @@
+"PROPERTY MANAGEMENT SYSTEM, INHOUSE, LEASING-CAS, LEASING PORTAL"
+"Please be advised: LEASING INHOUSE and LEASING-CAS has the same user accounts unless changed and new accounts added."
+
+"SERVERS": {
+	"[PMS - LEASING - TSMS - ADMIN LEASING PORTAL]":{
+		"link": "172.16.161.37/AGC-PMS",
+		"link": "172.16.170.10/PMS",
+
+		"ADMIN MASTERFILE":{
+			"username":"admin123",
+			"password":"Admin123"
+		},
+		"ADMIN DOCUMENT OFFICER":{
+			"username":"doc_officer",
+			"password":"Leasing123"
+		},
+		"ADMIN ACCOUNTING":{
+			"ICM": {
+				"username":"icmaccounting1",
+				"password":"Leasing123"
+			},
+			"Alturas Mall":{
+				"username":"am_accounting",
+				"password":"Leasing123"
+			},
+			"Plaza Marcela":{
+				"username":"pmaccounting1",
+				"password":"Leasing123"
+			},
+			"Altacitta": {
+				"username":"alta_accounting",
+				"password":"Leasing123"
+			},
+			"Tubigon":{
+				"username":"tubigon",
+				"password":"Leasing123"
+			}
+		},
+		"CFS ADMIN":{
+			"ICM":{
+				"username":"admin_cfs",
+				"password":"Leasing123"
+			}
+		},
+
+		"Talibon link": "http://172.16.90.220:8080/AGC-PMS/",
+				"username":"at_accounting",
+				"password":"Leasing123",
+
+		"link":"leasingportal.altsportal.com",
+				"username":"portaladmin",
+				"password":"portaladmin"
+	},
+	"[LEASING SUPERADMIN]": {
+		"link":"172.16.161.37/AGC-PMS/admin",
+			"username": "superadmin",
+			"password": "Leasing123",
+		"Talibon link": "http://172.16.90.220:8080/AGC-PMS/index.php/admin",
+			"username":"admin123",
+			"password":"Admin123"
+	}
+}
+
+{
+	"ICM, AM, PM, ALTA CITTA": {
+		"Accounts": {
+			"admin": {
+				"url": "http://172.16.161.37/AGC-PMS/index.php/ctrl_leasing/admin",
+				"uname": "admin123",
+				"password": "Admin123",
+				"description": "Control for masterfiles (Location Slot, Store, Users, Bank Details, etc.)"
+			},
+			"superadmin": {
+				"url": "http://172.16.161.37/AGC-PMS/index.php/admin",
+				"uname": "superadmin",
+				"password": "Admin123 or superadmin",
+				"description": "For adjustments (change basic rent, cancelling invoices/payments/soa, change bank code, changing posting/due date)"
+			},
+			"doc_officer": {
+				"url": "http://172.16.161.37/AGC-PMS/index.php/ctrl_leasing/",
+				"uname": "doc_officer",
+				"password": "Leasing123",
+				"description": "For adding Tenants, adding/amending/terminating contracts, etc."
+			},
+			"Accounting": {
+				"url": "http://172.16.161.37/AGC-PMS/index.php/ctrl_leasing/",
+				"uname": [
+					"am_accounting",
+					"alta_accounting",
+					"pmaccounting1"
+				],
+				"password": "Leasing123",
+				"description": "Accounting Entries, Creating invoices/SOA, transaction UFT/IFT/IP/RI payment, generating reports, generating textfiles for NAV"
+			},
+			"CFS_officer": {
+				"url": "http://172.16.161.37/AGC-PMS/index.php/ctrl_cfs/cfs_login",
+				"description": "For CFS Officers  (Payments Transactions & generating payment reports)"
+			}
+		},
+		"ProgramControl": {
+			"FileZilla": {
+				"host": "172.16.161.37",
+				"username": "cyril",
+				"password": "cyril"
+			},
+			"SQLServer": {
+				"host": "172.16.161.37",
+				"port": "3306",
+				"username": "root",
+				"password": "itprog2013"
+			}
+		}
+	},
+	"TALIBON AM": {
+		"Accounts": {
+			"admin": {
+				"url": "http://172.16.90.220:8080/AGC-PMS/index.php/ctrl_leasing/admin",
+				"uname": "admin123",
+				"password": "Admin123",
+				"description": "Control for masterfiles (Location Slot, Store, Users, Bank Details, etc.)"
+			},
+			"superadmin": {
+				"url": "http://172.16.90.220:8080/AGC-PMS/index.php/admin",
+				"uname": "admin123",
+				"password": "Admin123",
+				"description": "For adjustments (change basic rent, cancelling invoices/payments/soa, change bank code, changing posting/due date)"
+			},
+			"doc_officer": {
+				"url": "http://172.16.90.220:8080/AGC-PMS/index.php/ctrl_leasing/",
+				"description": "For adding Tenants, adding/amending/terminating contracts, etc."
+			},
+			"Accounting": {
+				"url": "http://172.16.90.220:8080/AGC-PMS/index.php/ctrl_leasing/",
+				"description": "Accounting Entries, Creating invoices/SOA, transaction UFT/IFT/IP/RI payment, generating reports, generating textfiles for NAV"
+			},
+			"CFS_officer": {
+				"url": "http://172.16.90.220:8080/AGC-PMS/index.php/ctrl_cfs/cfs_login",
+				"description": "For CFS Officers  (Payments Transactions & generating payment reports)"
+			}
+		},
+		"ProgramControl": {
+			"FileZilla": {
+				"host": "172.16.90.220",
+				"username": "cyril",
+				"password": "cyril",
+			},
+			"SQLServer": {
+				"host": "172.16.90.220",
+				"port": "3306",
+				"username": "root",
+				"password": "itprog2013"
+			}
+		}
+	},
+	"CEBU COL-C & COL_M": {
+		"LOCAL IP": "172.16.80.190",
+		"Accounts": {
+			"admin": {
+				"url": "http://10.32.6.213/AGC-PMS/index.php/ctrl_leasing/admin",
+				"uname": "admin123",
+				"password": "Leasing123",
+				"description": "Control for masterfiles (Location Slot, Store, Users, Bank Details, etc.)"
+			},
+			"superadmin": {
+				"url": "http://10.32.6.213/AGC-PMS/index.php/admin",
+				"uname": "pinky123",
+				"password": "Leasing123",
+				"description": "For adjustments (change basic rent, cancelling invoices/payments/soa, change bank code, changing posting/due date)"
+			},
+			"doc_officer": {
+				"url": "http://10.32.6.213/AGC-PMS/index.php/ctrl_leasing/",
+				"description": "For adding Tenants, adding/amending/terminating contracts, etc."
+			},
+			"Accounting": {
+				"url": "http://10.32.6.213/AGC-PMS/index.php/ctrl_leasing/",
+				"description": "Accounting Entries, Creating invoices/SOA, transaction UFT/IFT/IP/RI payment, generating reports, generating textfiles for NAV"
+			},
+			"CFS_officer": {
+				"url": "http://10.32.6.213/AGC-PMS/index.php/ctrl_cfs/cfs_login",
+				"description": "For CFS Officers  (Payments Transactions & generating payment reports)"
+			}
+		},
+		"ProgramControl": {
+			"FileZilla": {
+				"host": "10.32.6.213",
+				"username": "leasing",
+				"password": "leasing2018"
+			},
+			"SQLServer": {
+				"host": "10.32.6.213",
+				"port": "3306",
+				"username": "leasing",
+				"password": "leasing2018"
+			}
+		}
+	},
+	"TSMS": {
+		"Accounts": {
+			"admin": {
+				"url": "http://172.16.161.37/AGC-TSMS/cntrl_tsms",
+				"uname": "admin",
+				"password": "Admin123",
+				"description": "All"
+			},
+		},
+		"ProgramControl": {
+			"FileZilla": {
+				"host": "172.16.161.37",
+				"username": "tsms",
+				"password": "tsms2019"
+			},
+			"SQLServer": {
+				"host": "172.16.161.37",
+				"port": "3306",
+				"username": "root",
+				"password": "itprog2013"
+			}
+		}
+	},
+	"LEASING LOCAL": {
+		"admin": {
+			"url": "http://172.16.43.75/AGC-PMS/index.php/ctrl_leasing/admin",
+			"uname": "admin123",
+			"password": "Admin123",
+			"description": "Control for masterfiles (Location Slot, Store, Users, Bank Details, etc.)"
+		},
+		"superadmin": {
+			"url": "http://172.16.43.75/AGC-PMS/index.php/admin",
+			"uname": "superadmin",
+			"password": "Admin123 or superadmin",
+			"description": "For adjustments (change basic rent, cancelling invoices/payments/soa, change bank code, changing posting/due date)"
+		},
+		"doc_officer": {
+			"url": "http://172.16.43.75/AGC-PMS/index.php/ctrl_leasing/",
+			"uname": "doc_officer",
+			"password": "Leasing123",
+			"description": "For adding Tenants, adding/amending/terminating contracts, etc."
+		},
+		"Accounting": {
+			"url": "http://172.16.43.75/AGC-PMS/index.php/ctrl_leasing/",
+			"uname": [
+				"am_accounting",
+				"alta_accounting",
+				"pmaccounting1"
+			],
+			"password": "Leasing123",
+			"description": "Accounting Entries, Creating invoices/SOA, transaction UFT/IFT/IP/RI payment, generating reports, generating textfiles for NAV"
+		},
+		"CFS_officer": {
+			"url": "http://172.16.43.75/AGC-PMS/index.php/ctrl_cfs/cfs_login",
+			"description": "For CFS Officers  (Payments Transactions & generating payment reports)"
+		}
+	},
+	"HOST GATOR": {
+		"user": "duxvwc44_agc-pms",
+		"password": "+AgIKfdyaC0d"
+	}
+}

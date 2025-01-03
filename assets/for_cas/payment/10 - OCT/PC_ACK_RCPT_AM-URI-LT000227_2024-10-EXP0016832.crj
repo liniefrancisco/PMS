@@ -1,0 +1,3 @@
+CASHRCPT<|>10000<|>Bank Account<|>B-002<|>10/28/2024<|>Payment<|>URI-PS0003681<|>PNB - Main<|>21400.00<|>01.01<|>01.01.2<|>CASHRECJNL<|>ACK_RCPT<|><|><|><|>Check: Check#0001257530 Bank: PNB<|><|>
+CASHRCPT<|>20000<|>Customer<|>AM-URI-LT000227<|>10/28/2024<|>Payment<|>URI-PS0003681<|>URI-KIDS KPP 888 INC.<|>(21400.00)<|>01.01<|>01.01.2<|>CASHRECJNL<|>ACK_RCPT<|><|><|><|><|><|>
+CASHRCPT<|>30000<|>Preop<|>OLS093024-IC0006791<|><|><|><|><|>81400.00<|>01.01<|>01.01.2<|>CASHRECJNL<|>ACK_RCPT<|><|><|><|><|><|>
