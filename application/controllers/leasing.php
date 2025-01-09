@@ -1,8 +1,6 @@
 <?php if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
-//test
-//sadsds
 
 class Leasing extends CI_Controller
 {
