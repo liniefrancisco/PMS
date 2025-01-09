@@ -1022,6 +1022,22 @@ class Leasing extends CI_Controller
         $preop_charges = !empty($grouped_docs['Preop-Charges']) ? $grouped_docs['Preop-Charges'] : [];
         $invoices = !empty($grouped_docs['Invoice']) ? $grouped_docs['Invoice'] : [];
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // var_dump('invoices: ', $invoices);
+        // die;
+
         /*$date = date_create($date_created);
         date_sub($date,date_interval_create_from_date_string("15 days"));
         $soa_current_date   =  date_format($date,"Y-m");*/
@@ -1150,6 +1166,8 @@ class Leasing extends CI_Controller
                         ]);
                     }
 
+
+
                     $soa_display['previous'][$date]['has_basic'] = $has_basic;
                     $soa_display['previous'][$date]['debit'] = $total_per_month_debit;
                     $soa_display['previous'][$date]['credit'] = $total_per_month_credit;
@@ -1159,15 +1177,13 @@ class Leasing extends CI_Controller
 
                     //========== START OF CALCULATING PENALTY HERE ================
                     if ($tenant->penalty_exempt != 1 && !$this->DISABLE_PENALTY) {
-                        $penalty_grouped_invoices = array_group_by(
-                            $gp_inv,
-                            function ($inv) use ($last_due_date) {
+                        $penalty_grouped_invoices = array_group_by($gp_inv, function ($inv) use ($last_due_date) {
                                 $inv = (object) $inv;
 
                                 $last_due = date_create($last_due_date);
                                 $due_date = date_create($inv->due_date);
-                                $diff = date_diff($due_date, $last_due);
-                                $diff = (int) $diff->format('%R%a');
+                                $diff     = date_diff($due_date, $last_due);
+                                $diff     = (int) $diff->format('%R%a');
 
                                 return floor($diff / 20);
                             }
@@ -1180,18 +1196,22 @@ class Leasing extends CI_Controller
                             if ($penalty == 0) {
                                 continue;
                             }
+                     
 
                             $penalty_percentage = $penalty >= 2 ? 3 : 2;
-                            $total_penaltyble = 0;
-                            $total_penalty = 0;
-                            $penalty_due_date = $last_due_date;
+                            $total_penaltyble   = 0;
+                            $total_penalty      = 0;
+                            $penalty_due_date   = $last_due_date;
 
                             foreach ($pen_inv as $key => $inv) {
                                 $inv = (object) $inv;
 
-                                if ($inv->due_date < '2025-01-01') { // added by gwaps
+                                if ($inv->posting_date < '2025-01-01') { // added by gwaps
                                     continue;
-                                } // ends
+                                } 
+                                // if ($inv->due_date < '2025-01-01') {                
+                                //     continue;
+                                // }                                                   // ends
 
                                 $penaltyble = $inv->balance - $inv->nopenalty_amount;
                                 $total_penaltyble += $penaltyble > 0 ? $penaltyble : 0;
@@ -1210,7 +1230,7 @@ class Leasing extends CI_Controller
 
                             $total_penalty = $total_penaltyble * ($penalty_percentage / 100);
                             $total_penalty = round($total_penalty, 2);
-
+                         
                             $total_per_month_payable += $total_penalty;
 
                             $soa_display['previous'][$date]['penalties'][] = [
