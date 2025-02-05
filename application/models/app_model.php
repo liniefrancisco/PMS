@@ -4406,7 +4406,7 @@ class App_model extends CI_model
                 END) AS `is_incrementable`
                 -- gwaps
                 ,(CASE
-                    WHEN `t`.`increment_percentage` != 'None' AND `t`.`increment_frequency` = 'Annual' THEN TIMESTAMPDIFF(YEAR, `t`.`created_at`, CURDATE()) + 1
+                    WHEN `t`.`increment_percentage` != 'None' AND `t`.`increment_frequency` = 'Annual' THEN TIMESTAMPDIFF(YEAR, `t`.`created_at`, CURDATE()) 
                     ELSE '0'
                 END) AS `is_incrementable1`
                 -- gwaps end
