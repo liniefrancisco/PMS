@@ -4404,6 +4404,12 @@ class App_model extends CI_model
                     WHEN `t`.`increment_percentage` != 'None' AND `t`.`increment_frequency` = 'Triennial' THEN FLoor(TIMESTAMPDIFF(YEAR, `t`.`opening_date`, CURDATE()) / 3)
                     ELSE '0'
                 END) AS `is_incrementable`
+                -- gwaps
+                ,(CASE
+                    WHEN `t`.`increment_percentage` != 'None' AND `t`.`increment_frequency` = 'Annual' THEN TIMESTAMPDIFF(YEAR, `t`.`created_at`, CURDATE()) + 1
+                    ELSE '0'
+                END) AS `is_incrementable1`
+                -- gwaps end
             FROM
                 `prospect` `p`,
                 `tenants` `t`
