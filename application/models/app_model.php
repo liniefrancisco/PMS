@@ -675,6 +675,21 @@ class App_model extends CI_model
         }
     }
 
+        // gwaps ============
+        public function update1($data, $col, $id, $tbl_name, $col1, $row1)
+        {
+            $this->db->where($col, $id);
+            $this->db->where($col1, $row1);
+            $this->db->update($tbl_name, $data);
+    
+            if ($this->db->affected_rows() > 0) {
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+        }
+        // gwaps ends =======
+
 
     public function update_where($data, $where, $value, $tbl_name)
     {
