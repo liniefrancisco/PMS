@@ -22,7 +22,7 @@
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://172.16.43.75/PMS/';
+$config['base_url'] = 'http://172.16.43.109/PMS/';
 
 
 /*
