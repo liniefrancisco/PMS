@@ -1206,12 +1206,12 @@ class Leasing extends CI_Controller
                             foreach ($pen_inv as $key => $inv) {
                                 $inv = (object) $inv;
 
-                                if ($inv->posting_date < '2025-01-01') { // added by gwaps
-                                    continue;
-                                } 
-                                // if ($inv->due_date < '2025-01-01') {                
+                                // if ($inv->posting_date < '2025-01-01') { // added by gwaps
                                 //     continue;
-                                // }                                                   // ends
+                                // } 
+                                if ($inv->due_date < '2025-02-11') {                
+                                    continue;
+                                }                                                   // ends
 
                                 $penaltyble = $inv->balance - $inv->nopenalty_amount;
                                 $total_penaltyble += $penaltyble > 0 ? $penaltyble : 0;
