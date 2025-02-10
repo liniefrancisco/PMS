@@ -264,7 +264,8 @@ class Leasing extends CI_Controller
         $doc_no = $this->app_model->get_docNo(false, false);
         $gl_refNo = $this->app_model->gl_refNo(false, false);
 
-        if (!$this->DISABLE_PENALTY) {
+        // if (!$this->DISABLE_PENALTY) {
+        if (!$this->DISABLE_PENALTY && $due_date > '2025-02-10') {  // gwaps
             $this->generateLatePaymentPenalty($tenant_id, $posting_date, $due_date);
         }
 
