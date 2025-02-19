@@ -264,7 +264,8 @@ class Leasing extends CI_Controller
         $doc_no = $this->app_model->get_docNo(false, false);
         $gl_refNo = $this->app_model->gl_refNo(false, false);
 
-        if (!$this->DISABLE_PENALTY) {
+        // if (!$this->DISABLE_PENALTY) {
+        if (!$this->DISABLE_PENALTY && $due_date > '2025-01-25') {  // gwaps
             $this->generateLatePaymentPenalty($tenant_id, $posting_date, $due_date);
         }
 
@@ -1177,13 +1178,15 @@ class Leasing extends CI_Controller
 
                     //========== START OF CALCULATING PENALTY HERE ================
                     if ($tenant->penalty_exempt != 1 && !$this->DISABLE_PENALTY) {
-                        $penalty_grouped_invoices = array_group_by($gp_inv, function ($inv) use ($last_due_date) {
+                        $penalty_grouped_invoices = array_group_by(
+                            $gp_inv,
+                            function ($inv) use ($last_due_date) {
                                 $inv = (object) $inv;
 
                                 $last_due = date_create($last_due_date);
                                 $due_date = date_create($inv->due_date);
-                                $diff     = date_diff($due_date, $last_due);
-                                $diff     = (int) $diff->format('%R%a');
+                                $diff = date_diff($due_date, $last_due);
+                                $diff = (int) $diff->format('%R%a');
 
                                 return floor($diff / 20);
                             }
@@ -1196,22 +1199,24 @@ class Leasing extends CI_Controller
                             if ($penalty == 0) {
                                 continue;
                             }
-                     
+
 
                             $penalty_percentage = $penalty >= 2 ? 3 : 2;
-                            $total_penaltyble   = 0;
-                            $total_penalty      = 0;
-                            $penalty_due_date   = $last_due_date;
+                            $total_penaltyble = 0;
+                            $total_penalty = 0;
+                            $penalty_due_date = $last_due_date;
 
                             foreach ($pen_inv as $key => $inv) {
                                 $inv = (object) $inv;
 
-                                if ($inv->posting_date < '2025-01-01') { // added by gwaps
-                                    continue;
-                                } 
-                                // if ($inv->due_date < '2025-01-01') {                
+
+                                // added by gwaps
+                                // if ($inv->posting_date < '2025-01-01') { 
                                 //     continue;
-                                // }                                                   // ends
+                                // }
+                                if ($inv->due_date < '2025-01-31') {
+                                    continue;
+                                } // ends
 
                                 $penaltyble = $inv->balance - $inv->nopenalty_amount;
                                 $total_penaltyble += $penaltyble > 0 ? $penaltyble : 0;
@@ -1230,7 +1235,7 @@ class Leasing extends CI_Controller
 
                             $total_penalty = $total_penaltyble * ($penalty_percentage / 100);
                             $total_penalty = round($total_penalty, 2);
-                         
+
                             $total_per_month_payable += $total_penalty;
 
                             $soa_display['previous'][$date]['penalties'][] = [
@@ -2555,8 +2560,8 @@ class Leasing extends CI_Controller
             'transaction_date' => getCurrentDate(),
         ]);
 
-        //$response['file_name'] = base_url() . 'assets/pdf/' . $file_name;
-        //header('Content-Type: application/facilityrental_pdf');
+        // $response['file_name'] = base_url() . 'assets/pdf/' . $file_name;
+        // header('Content-Type: application/facilityrental_pdf');
 
         $pdf->Output('assets/pdf/' . $file_name, 'F');
 
@@ -5968,7 +5973,7 @@ class Leasing extends CI_Controller
                                     $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>{$result['gl_code']}<|>$pDate<|><|>{$doc_no}<|>{$result['gl_account']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$billing_period};{$due_date}<|><|>"];
                                 } else {
                                     $amount = str_replace('-', '', $result['amount']);
-                                    $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>{$result['gl_code']}<|>$pDate<|><|>{$doc_no}<|>{$result['gl_account']}<|>($amount)<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$billing_period};{$due_date}<|><|>"];
+                                    $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>{$result['gl_code']}<|>$pDate<|><|>{$doc_no}<|>{$result['gl_account']}<|>$amount<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$billing_period};{$due_date}<|><|>"];
                                 }
 
                                 $line_no += 10000;
@@ -6130,6 +6135,31 @@ class Leasing extends CI_Controller
                             }
 
                             foreach ($data as $result) {
+                                $otherCharges_query = $this->db->query("
+                                SELECT debit 
+                                FROM subsidiary_ledger 
+                                WHERE doc_no = '{$result['doc_no']}' 
+                                  AND gl_accountID IN ('5', '22', '29')
+                            ");
+
+                                // Initialize variables
+                                $OC_amount = 0; // Total Other Charges
+                                $amount_noVat = 0; // Amount without VAT
+                                $vat_amount = 0; // VAT (12%)
+
+                                foreach ($otherCharges_query->result() as $row) {
+                                    $OC_amount += floatval($row->debit); // Sum up all debit values
+                                }
+
+                                // Compute Amount Without VAT (Base Amount)
+                                // $amount_noVat = round($OC_amount / 1.12, 3);
+                                $amount_noVat = number_format($OC_amount / 1.12, 2, '.', '');
+
+                                // Compute VAT (12% of Base Amount)
+                                // $vat_amount = round($amount_noVat * 0.12, 2);
+                                $vat_amount = number_format($amount_noVat * 0.12, 2, '.', '');
+
+
                                 $pDate = date('F Y', strtotime($result['posting_date']));
                                 $tenantID = str_replace('-', '-OC-', $result['tenant_id']);
                                 $tradeName = substr($result['trade_name'], 0, 36);
@@ -6137,205 +6167,216 @@ class Leasing extends CI_Controller
                                 $dueDateFormatted = date('M d, Y', strtotime($result['due_date'])); // Format due date to abbreviated month
                                 $formattedBillingPeriod = formatBillingPeriod($billing_period);
 
+
                                 if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
                                     $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                                 } elseif ($result['gl_code'] == '10.10.01.06.05') {
-                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                    // $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>LEASING<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
+                                    // Increment line number for the new row
+                                    $line_no += 10000;
+
+                                    // Add a new line for VAT Output
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
+
                                 } elseif ($result['gl_code'] == '20.80.01.08.07') {
+
                                     $amawnt = str_replace('-', '', $result['amount']);
                                     $invoicing = $this->db->query("SELECT * FROM invoicing WHERE balance = '{$amawnt}' AND doc_no = '{$result['doc_no']}'")->row();
+
+                                    $amount_noVat = number_format($amawnt / 1.12, 2, '.', '');
 
                                     switch ($invoicing->charges_code) {
                                         case 'PC000007':
                                             $customDescription = 'Gas';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                                             break;
                                         case 'PC000008':
                                             $customDescription = 'Pest Control';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000018':
                                             $customDescription = 'Penalty for Late Opening and Early Closing';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000020':
                                             $customDescription = 'Worker ID';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000021':
                                             $customDescription = 'Plywood Enclosure';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000022':
                                             $customDescription = 'PVC Door and Lock Set';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000023':
                                             $customDescription = 'Bio Augmentation';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000024':
                                             $customDescription = 'Service Request';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000025':
                                             $customDescription = 'Overtime and Overnight';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000028':
                                             $customDescription = 'Security Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000029':
                                             $customDescription = 'Exhaust Duct Cleaning Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000033':
                                             $customDescription = 'Storage Room Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000036':
                                             $customDescription = 'Adbox Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000038':
                                             $customDescription = 'Houserules Violation';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000039':
                                             $customDescription = 'Notary Fee';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000043':
                                             $customDescription = 'Service Request from ASC Construction';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000044':
                                             $customDescription = 'Penalty House Rules Violation';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000046':
                                             $customDescription = 'Bannerboard Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000050':
                                             $customDescription = 'Others';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000051':
                                             $customDescription = 'Adjustment VAT Output';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000054':
                                             $customDescription = 'Glass Service';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000056':
                                             $customDescription = 'Standy';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000057':
                                             $customDescription = 'Sprinkler Water Draining Charging';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000067':
                                             $customDescription = 'Plywood_Enclosure';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000068':
                                             $customDescription = 'During Construction Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000071':
                                             $customDescription = 'Alturush Food Delivery';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000074':
                                             $customDescription = 'Electricity 01';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000076':
                                             $customDescription = 'Electricity Freezer';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000077':
                                             $customDescription = 'Telephone Bill';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000078':
                                             $customDescription = 'Pylon Signage';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000079':
                                             $customDescription = 'LED BILLBOARD';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000080':
                                             $customDescription = 'Billboard';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000081':
                                             $customDescription = 'Management Fee';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000082':
                                             $customDescription = 'Regulatory Fee';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
                                         case 'PC000083':
                                             $customDescription = 'Internet Connection';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amawnt})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
 
                                             break;
 
                                     }
-
                                     $customDescription = '';
-
+                                    // $line_no += 10000;
 
                                 } else {
                                     $amount = str_replace('-', '', $result['amount']);
-                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$glAccountName}<|>({$amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                    $nv_amount = number_format($amount / 1.12, 2, '.', '');
+
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa_no}-{$glAccountName}<|>({$nv_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                                 }
 
                                 $line_no += 10000;
 
                                 $externalDocNo = ($value['cas_doc_no'] != '') ? $doc_no : "{$doc_no}-{$result['doc_no']}";
                             }
-
                             // dump($rows);
                             // exit();
 
@@ -6721,13 +6762,13 @@ class Leasing extends CI_Controller
 
                             if ($result['description'] == 'Construction Bond') {
                                 // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$result['doc_no']}<|><|>"];
-                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                             } else if ($result['description'] == 'Security Deposit - Kiosk and Cart' || $result['description'] == 'Security Deposit') {
                                 // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$result['doc_no']}<|><|>"];
-                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$soa_no}-{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$soa_no}-{$result['description']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                             } else if ($result['description'] == 'Advance Rent') {
                                 // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$result['doc_no']}<|><|>"];
-                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$soa_no}-{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$soa_no}-{$result['description']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                             }
 
                             $line_no += 10000;
@@ -6912,7 +6953,7 @@ class Leasing extends CI_Controller
                                     $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>{$result['gl_code']}<|>$pDate<|><|>{$doc_no}<|>{$result['gl_account']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$billing_period};{$due_date}<|><|>"];
                                 } else {
                                     $amount = str_replace('-', '', $result['amount']);
-                                    $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>{$result['gl_code']}<|>$pDate<|><|>{$doc_no}<|>{$result['gl_account']}<|>($amount)<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$billing_period};{$due_date}<|><|>"];
+                                    $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>{$result['gl_code']}<|>$pDate<|><|>{$doc_no}<|>{$result['gl_account']}<|>$amount<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$billing_period};{$due_date}<|><|>"];
                                 }
 
                                 $line_no += 10000;
@@ -7090,6 +7131,31 @@ class Leasing extends CI_Controller
                                     $soa->billing_period = '';
                                 }
 
+                                $otherCharges_query = $this->db->query("
+                                SELECT debit 
+                                FROM subsidiary_ledger 
+                                WHERE doc_no = '{$result['doc_no']}' 
+                                  AND gl_accountID IN ('5', '22', '29')
+                            ");
+
+                                // Initialize variables
+                                $OC_amount = 0; // Total Other Charges
+                                $amount_noVat = 0; // Amount without VAT
+                                $vat_amount = 0; // VAT (12%)
+
+                                foreach ($otherCharges_query->result() as $row) {
+                                    $OC_amount += floatval($row->debit); // Sum up all debit values
+                                }
+
+                                // Compute Amount Without VAT (Base Amount)
+                                // $amount_noVat = round($OC_amount / 1.12, 3);
+                                $amount_noVat = number_format($OC_amount / 1.12, 2, '.', '');
+
+                                // Compute VAT (12% of Base Amount)
+                                // $vat_amount = round($amount_noVat * 0.12, 2);
+                                $vat_amount = number_format($amount_noVat * 0.12, 2, '.', '');
+
+
                                 $pDate = date('F Y', strtotime($result['posting_date']));
                                 $tenantID = str_replace('-', '-OC-', $result['tenant_id']);
                                 $tradeName = substr($result['trade_name'], 0, 36);
@@ -7097,198 +7163,213 @@ class Leasing extends CI_Controller
                                 $dueDateFormatted = date('M d, Y', strtotime($result['due_date']));
                                 $formattedBillingPeriod = formatBillingPeriod($soa->billing_period);
 
-
                                 if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
                                     $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                 } elseif ($result['gl_code'] == '10.10.01.06.05') {
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
+                                    // Increment line number for the new row
+                                    $line_no += 10000;
+
+                                    // Add a new line for VAT Output
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
+
                                 } elseif ($result['gl_code'] == '20.80.01.08.07') {
                                     $amawnt = str_replace('-', '', $result['amount']);
                                     $invoicing = $this->db->query("SELECT * FROM invoicing WHERE balance = '{$amawnt}' AND doc_no = '{$result['doc_no']}'")->row();
 
+                                    // $amount_noVat = round($amawnt / 1.12, 2); // Amount without VAT
+                                    $amount_noVat = number_format($amawnt / 1.12, 2, '.', '');
+
                                     switch ($invoicing->charges_code) {
                                         case 'PC000007':
                                             $customDescription = 'Gas';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
                                             break;
                                         case 'PC000008':
                                             $customDescription = 'Pest Control';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000018':
                                             $customDescription = 'Penalty for Late Opening and Early Closing';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000020':
                                             $customDescription = 'Worker ID';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000021':
                                             $customDescription = 'Plywood Enclosure';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000022':
                                             $customDescription = 'PVC Door and Lock Set';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000023':
                                             $customDescription = 'Bio Augmentation';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000024':
                                             $customDescription = 'Service Request';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000025':
                                             $customDescription = 'Overtime and Overnight';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000028':
                                             $customDescription = 'Security Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000029':
                                             $customDescription = 'Exhaust Duct Cleaning Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000033':
                                             $customDescription = 'Storage Room Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000036':
                                             $customDescription = 'Adbox Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000038':
                                             $customDescription = 'Houserules Violation';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000039':
                                             $customDescription = 'Notary Fee';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000043':
                                             $customDescription = 'Service Request from ASC Construction';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000044':
                                             $customDescription = 'Penalty House Rules Violation';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000046':
                                             $customDescription = 'Bannerboard Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000050':
                                             $customDescription = 'Others';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000051':
                                             $customDescription = 'Adjustment VAT Output';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000054':
                                             $customDescription = 'Glass Service';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000056':
                                             $customDescription = 'Standy';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000057':
                                             $customDescription = 'Sprinkler Water Draining Charging';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000067':
                                             $customDescription = 'Plywood_Enclosure';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000068':
                                             $customDescription = 'During Construction Charges';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000071':
                                             $customDescription = 'Alturush Food Delivery';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000074':
                                             $customDescription = 'Electricity 01';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000076':
                                             $customDescription = 'Electricity Freezer';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000077':
                                             $customDescription = 'Telephone Bill';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000078':
                                             $customDescription = 'Pylon Signage';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000079':
                                             $customDescription = 'LED BILLBOARD';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000080':
                                             $customDescription = 'Billboard';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000081':
                                             $customDescription = 'Management Fee';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>LEASING<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000082':
                                             $customDescription = 'Regulatory Fee';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                         case 'PC000083':
                                             $customDescription = 'Internet Connection';
-                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
+                                            $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$customDescription}<|>({$amount_noVat})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>"];
 
                                             break;
                                     }
                                     $customDescription = '';
+
                                 } else {
+
                                     $amount = str_replace('-', '', $result['amount']);
-                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$glAccountName}<|>({$amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
+                                    // $nv_amount = round($amount / 1.12, 2);
+                                    $nv_amount = number_format($amount / 1.12, 2, '.', '');
+
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$soa->soa_no}-{$glAccountName}<|>({$nv_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
+
                                 }
 
                                 $line_no += 10000;
+
                                 $externalDocNo = ($value['cas_doc_no'] != '') ? $doc_no : "{$doc_no}-{$result['doc_no']}";
                             }
 
@@ -7764,14 +7845,14 @@ class Leasing extends CI_Controller
                             $formattedBillingPeriod = formatBillingPeriod($soa->billing_period);
 
                             if ($result['description'] == 'Construction Bond') {
-                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$soa->billing_period}<|><|>"];
-                                // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$soa->billing_period}<|><|>"];
+                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.10<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                             } else if ($result['description'] == 'Security Deposit - Kiosk and Cart' || $result['description'] == 'Security Deposit') {
-                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$soa->billing_period}<|><|>"];
-                                // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>$soa->soa_no-{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$soa->billing_period}<|><|>"];
+                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.03.12<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>$soa->soa_no-{$result['description']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                             } else if ($result['description'] == 'Advance Rent') {
-                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$soa->billing_period}<|><|>"];
-                                // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$soa->soa_no}-{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                // $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$result['description']}<|>({$result['amount']})<|>$company_code<|>$dept_code<|>GENJNL<|>LEASING<|><|><|><|>{$soa->billing_period}<|><|>"];
+                                $rows[] = ["GENERAL<|>$line_no<|>G/L Account<|>10.20.01.01.02.01<|>$pDate<|><|>{$doc_no}-{$result['doc_no']}<|>{$soa->soa_no}-{$result['description']}<|>{$result['amount']}<|>$company_code<|>$dept_code<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                             }
 
                             $line_no += 10000;
@@ -8063,6 +8144,10 @@ class Leasing extends CI_Controller
     //     }
     // }
     // ================================ gwaps ===========================================
+
+
+
+
     public function paymentReprintNew()
     {
         $file = $this->uri->segment('3');

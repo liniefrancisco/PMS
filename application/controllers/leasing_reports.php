@@ -2185,7 +2185,18 @@ class Leasing_reports extends CI_Controller
         }
     }
     // ---------------------------
-
+    public function monthly_receivable_summary_new1()
+    {
+        if ($this->session->userdata('leasing_logged_in')) {
+            $data['flashdata'] = $this->session->flashdata('message');
+            $data['expiry_tenants'] = $this->app_model->get_expiryTenants();
+            $this->load->view('leasing/header', $data);
+            $this->load->view('leasing/monthly_receivable_summary_new');
+            $this->load->view('leasing/footer');
+        } else {
+            redirect('ctrl_leasing/');
+        }
+    }
 
 
     // public function generate_monthly_receivable_summary()
@@ -2306,7 +2317,50 @@ class Leasing_reports extends CI_Controller
         }
     }
     // --------------------------------------------
+    public function generate_monthly_receivable_summary_new1()
+    {
+        if ($this->session->userdata('leasing_logged_in')) {
+            $month = $this->sanitize($this->input->post('month'));
+            $storecode = $this->session->userdata('store_code');
+            $reportData = $this->app_model->generate_monthly_receivable_summary_new1($month);
+            $reportDataNew = [];
 
+            foreach ($reportData as $key => $value) {
+                $tenantId = $value['tenant_id'];
+
+                if (!isset($reportDataNew[$tenantId])) {
+                    $reportDataNew[$tenantId] = [
+                        'tenant_id' => $tenantId,
+                        'trade_name' => $value['trade_name'],
+                        'tin' => $value['tin'],
+                        'basic' => 0,
+                        'others' => 0,
+                        'basic_total' => 0,
+                        'basic_others' => 0,
+                        'total' => 0,
+                    ];
+                }
+
+                if ($value['gl_accountID'] === '4') {
+                    $reportDataNew[$tenantId]['basic'] += $value['basic_amount'];
+                } else if (in_array($value['gl_accountID'], ['6'])) {
+                    $reportDataNew[$tenantId]['others'] += $value['vat_output'];
+                } else if (in_array($value['gl_accountID'], ['22', '29'])) {
+                    $reportDataNew[$tenantId]['others'] += $value['others_amount'];
+                }
+
+                $reportDataNew[$tenantId]['total'] = $reportDataNew[$tenantId]['basic'] + $reportDataNew[$tenantId]['others'];
+            }
+
+            // $ar_total = $this->app_model->AR_monthly_total_new($month);
+            // $rr_total = $this->app_model->RR_monthly_total_new($month);
+            $filename = "Monthly Receivable Summary " . $month . " (" . $storecode . ") NEW ";
+            // $this->excel->generate_monthly_receivable_summary_new($reportDataNew, $ar_total, $rr_total, $filename, $month);
+            $this->excel->generate_monthly_receivable_summary_new1($reportDataNew, $filename, $month);
+        } else {
+            redirect('ctrl_leasing/');
+        }
+    }
 
     // //=========================== gwaps ===================================================
     //     public function generate_monthly_receivable_summary()

@@ -675,6 +675,20 @@ class App_model extends CI_model
         }
     }
 
+    // gwaps ============
+    public function update1($data, $col, $id, $tbl_name, $col1, $row1)
+    {
+        $this->db->where($col, $id);
+        $this->db->where($col1, $row1);
+        $this->db->update($tbl_name, $data);
+
+        if ($this->db->affected_rows() > 0) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+    // gwaps ends =======
 
     public function update_where($data, $where, $value, $tbl_name)
     {
@@ -4404,6 +4418,12 @@ class App_model extends CI_model
                     WHEN `t`.`increment_percentage` != 'None' AND `t`.`increment_frequency` = 'Triennial' THEN FLoor(TIMESTAMPDIFF(YEAR, `t`.`opening_date`, CURDATE()) / 3)
                     ELSE '0'
                 END) AS `is_incrementable`
+                -- gwaps
+                ,(CASE
+                    WHEN `t`.`increment_percentage` != 'None' AND `t`.`increment_frequency` = 'Annual' THEN TIMESTAMPDIFF(YEAR, `t`.`created_at`, CURDATE()) 
+                    ELSE '0'
+                END) AS `is_incrementable1`
+                -- gwaps end
             FROM
                 `prospect` `p`,
                 `tenants` `t`
@@ -13466,7 +13486,7 @@ class App_model extends CI_model
 
 
     // --------------------------------------------
-    public function generate_monthly_receivable_summary_new($month)
+    public function generate_monthly_receivable_summary_new1($month)
     {
         $query = $this->db->query("
             SELECT
@@ -14464,6 +14484,7 @@ class App_model extends CI_model
 
         return compact('data', 'doc_nos');
     }
+
 
     public function generate_RRreportsAdjustment($month, $tenantid)
     {

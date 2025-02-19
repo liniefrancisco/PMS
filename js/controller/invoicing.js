@@ -277,11 +277,23 @@ window.myApp.controller(
 
       if ($scope.is_incrementable() > 0) {
         let exponent = $scope.is_incrementable() - 1;
+        let exponent1 = tenant.is_incrementable1; // gwaps
 
         if (tenant.tenant_id == "PM-LT000100") {
           basic_rental = parseNumber(basic_rental);
           // *  Math.pow(1+ (parseFloat(tenant.increment_percentage)/100), exponent);
-        } else {
+        } 
+        // gwaps ===========
+        else if (tenant.tenant_id == "ACT-LT000027") {
+          basic_rental =
+          parseNumber(basic_rental) *
+          Math.pow(
+            1 + parseFloat(tenant.increment_percentage) / 100,
+            exponent1
+          );
+        } 
+        // gwaps end ===========
+        else {
           basic_rental =
             parseNumber(basic_rental) *
             Math.pow(

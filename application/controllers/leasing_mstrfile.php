@@ -3500,7 +3500,6 @@ class Leasing_mstrfile extends CI_Controller
             $rental_rate = str_replace(",", "", $this->sanitize($this->input->post('rental_rate')));
             $floor_id = $this->app_model->get_floorID($store_name, $floor_name);
 
-
             if ($floor_area != '0.00' && $rental_rate != '0.00') {
 
                 // =================== Insert to Location Code table =========== //
@@ -3519,9 +3518,29 @@ class Leasing_mstrfile extends CI_Controller
                 $this->app_model->locationSlot_history($id_to_update);
 
 
-                if ($this->app_model->update($data, $id_to_update, 'location_slot')) {
+                // if ($this->app_model->update($data, $id_to_update, 'location_slot')) {
+                //     $this->session->set_flashdata('message', 'Updated');
+                // }
+
+                // gwaps ===============
+                $status = 'Active';
+                $data1 = array(
+                    'tenancy_type'           =>      $tenancy_type,
+                    'floor_id'               =>      $floor_id,
+                    'floor_area'             =>      $floor_area,
+                    'rental_rate'            =>      $rental_rate,
+                    'modified_by'            =>      $this->session->userdata('id'),
+                    'date_modified'          =>      $this->_currentDate
+                );
+                $update1 = $this->app_model->update($data, $id_to_update, 'location_slot');
+                $update2 = $this->app_model->update1($data1, 'slots_id', $id_to_update, 'location_code', 'status', $status);
+
+                if ($update2 && $update1) {
                     $this->session->set_flashdata('message', 'Updated');
+                } else {
+                    $this->session->set_flashdata('message', 'Update Unsuccessful');
                 }
+                // gwaps end ===========
 
                 redirect('leasing_mstrfile/locationSlot_setup');
             } else {
