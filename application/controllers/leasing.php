@@ -7128,7 +7128,6 @@ class Leasing extends CI_Controller
                                 $vat_amount     = 0; // VAT (12%)
 
                                 foreach ($otherCharges_query->result() as $row) {
-                                    // var_dump('row',$row);
                                     $OC_amount += floatval($row->debit); // Sum up all debit values
                                 }
 
@@ -7155,7 +7154,6 @@ class Leasing extends CI_Controller
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                     $vatDisplayed = true;
                                     $line_no += 10000; 
-                                    // var_dump('rows:',$rows);
                                 } elseif ($result['gl_code'] == '10.10.01.06.05') {//Creditable WHT Receivable
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
                                     // Increment line number for the new row
@@ -7361,8 +7359,8 @@ class Leasing extends CI_Controller
                                 $externalDocNo = ($value['cas_doc_no'] != '') ? $doc_no : "{$doc_no}-{$result['doc_no']}";
                             }
 
-                            dump($rows);
-                            exit();
+                            // dump($rows);
+                            // exit();
 
                             $exp_batch_no = $this->app_model->generate_ExportNo(true);
                             $filter_date = date('Y-m', strtotime($posting_date));
