@@ -4307,23 +4307,22 @@ class Leasing_reports extends CI_Controller
     }
 
     /*=================== NAV EXPORTATION ===================*/
-    public function generate_ARreports()
-    {
+    public function generate_ARreports(){
         if (!$this->session->userdata('leasing_logged_in'))
             redirect('ctrl_leasing/');
 
-        $month = $this->sanitize($this->input->post('month'));
+        $month          = $this->sanitize($this->input->post('month'));
         // $fileType     = $this->sanitize($this->input->post('file_type'));
-        $month = date('F Y', strtotime($month));
-        $posting_date = date('m/d/Y', strtotime(date('Y-m-t', strtotime($month))));
-        $company_code = $this->session->userdata('company_code');
-        $dept_code = $this->session->userdata('dept_code');
-        $date = new DateTime();
-        $timeStamp = $date->getTimestamp();
-        $docno = 'LS' . date('mdy', strtotime(date('Y-m-t', strtotime($month))));
-        $report_data = $this->app_model->generate_ARreports($month);
-        $data = $report_data['data'];
-        $doc_nos = $report_data['doc_nos'];
+        $month          = date('F Y', strtotime($month));
+        $posting_date   = date('m/d/Y', strtotime(date('Y-m-t', strtotime($month))));
+        $company_code   = $this->session->userdata('company_code');
+        $dept_code      = $this->session->userdata('dept_code');
+        $date           = new DateTime();
+        $timeStamp      = $date->getTimestamp();
+        $docno          = 'LS' . date('mdy', strtotime(date('Y-m-t', strtotime($month))));
+        $report_data    = $this->app_model->generate_ARreports($month);
+        $data           = $report_data['data'];
+        $doc_nos        = $report_data['doc_nos'];
         // output each row of the data
         $file_data = '';
         if (!empty($data)) {
@@ -4331,8 +4330,8 @@ class Leasing_reports extends CI_Controller
 
             $rows = [];
             foreach ($data as $result) {
-                $pDate = date('F Y', strtotime($result['posting_date']));
-                $tenantID = str_replace('-', '-OC-', $result['tenant_id']);
+                $pDate      = date('F Y', strtotime($result['posting_date']));
+                $tenantID   = str_replace('-', '-OC-', $result['tenant_id']);
 
                 if ($result['gl_code'] == '10.10.01.03.03' || $result['gl_code'] == '10.10.01.03.04') {
                     $rows[] = array("GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$docno}<|>{$result['trade_name']}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>LEASING<|><|><|><|>{$result['doc_no']}<|><|>");

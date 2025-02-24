@@ -14429,20 +14429,19 @@ class App_model extends CI_model
                                     document_type ASC, inv.gl_accountID ASC, inv.posting_date ASC")->ROW();
     }
 
-    public function generate_ARreports($month, $tosearch)
-    {
+    public function generate_ARreports($month, $tosearch){
         #sl.tenant_id IN (SELECT t.tenant_id FROM tenants t, prospect p where  t.store_code = '$store' AND t.tenant_id != 'ICM-LT000064' AND t.prospect_id = p.id group by tenant_id)
-        $doc_nos = [];
-        $store = $this->session->userdata('store_code');
-        $invoices = $this->db->query("SELECT sl.doc_no
-                                      FROM subsidiary_ledger sl
-                                      WHERE (sl.document_type = 'Invoice' OR sl.document_type = 'Invoice Adjustment')
-                                      AND (sl.gl_accountID = '12' OR sl.gl_accountID = '13' OR sl.gl_accountID = '14' OR sl.gl_accountID = '15' OR sl.gl_accountID = '16' OR sl.gl_accountID = '17' OR sl.gl_accountID = '18' OR sl.gl_accountID = '20' OR sl.gl_accountID = '22' OR sl.gl_accountID = '29' OR sl.gl_accountID = '30' OR ( sl.gl_accountID = '5' AND sl.tag = 'Expanded'))
-                                      AND DATE_FORMAT(sl.posting_date, '%M %Y') = '$month'
-                                      AND (sl.export_batch_code IS NULL OR sl.export_batch_code = '')
-                                      AND (sl.tenant_id <> 'DELETED' AND sl.ref_no <> 'DELETED' AND sl.doc_no <> 'DELETED')
-                                      {$tosearch}
-                                      GROUP BY sl.doc_no, sl.tenant_id")->result();
+        $doc_nos    = [];
+        $store      = $this->session->userdata('store_code');
+        $invoices   = $this->db->query("SELECT sl.doc_no
+                                        FROM subsidiary_ledger sl
+                                        WHERE (sl.document_type = 'Invoice' OR sl.document_type = 'Invoice Adjustment')
+                                        AND (sl.gl_accountID = '12' OR sl.gl_accountID = '13' OR sl.gl_accountID = '14' OR sl.gl_accountID = '15' OR sl.gl_accountID = '16' OR sl.gl_accountID = '17' OR sl.gl_accountID = '18' OR sl.gl_accountID = '20' OR sl.gl_accountID = '22' OR sl.gl_accountID = '29' OR sl.gl_accountID = '30' OR ( sl.gl_accountID = '5' AND sl.tag = 'Expanded'))
+                                        AND DATE_FORMAT(sl.posting_date, '%M %Y') = '$month'
+                                        AND (sl.export_batch_code IS NULL OR sl.export_batch_code = '')
+                                        AND (sl.tenant_id <> 'DELETED' AND sl.ref_no <> 'DELETED' AND sl.doc_no <> 'DELETED')
+                                        {$tosearch}
+                                        GROUP BY sl.doc_no, sl.tenant_id")->result();
 
         foreach ($invoices as $key => $invoice) {
             $doc_nos[] = $invoice->doc_no;
@@ -14460,6 +14459,7 @@ class App_model extends CI_model
                                          TRIM(sl.ref_no) ref_no,
                                          ga.gl_code, 
                                          ga.gl_account,
+                                         sl.tag,
                                          (CASE 
                                             WHEN sl.gl_accountID = '22' OR sl.gl_accountID = '29' OR (sl.gl_accountID = '5' AND sl.tag = 'Expanded') 
                                             THEN SUM(sl.debit) - (SELECT IFNULL(SUM(ABS(sl1.credit)), 0) FROM subsidiary_ledger sl1 WHERE sl.ref_no = sl1.ref_no AND sl1.gl_accountID = sl.gl_accountID AND sl1.document_type = 'Credit Memo' AND sl1.tenant_id != 'DELETED')

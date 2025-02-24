@@ -6112,7 +6112,7 @@ class Leasing extends CI_Controller
                                 SELECT debit 
                                 FROM subsidiary_ledger 
                                 WHERE doc_no = '{$result['doc_no']}' 
-                                  AND gl_accountID IN ('5', '22', '29')
+                                AND gl_accountID IN ('5', '22', '29')
                             ");
 
                                 // Initialize variables
@@ -6142,8 +6142,10 @@ class Leasing extends CI_Controller
 
                                 $vatDisplayed = false;
 
-                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
+                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] =='Other') {
                                     $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
+                                    $vatDisplayed = true;
                                     $line_no += 10000;
                                 } elseif ($result['gl_code'] == '20.80.01.08.01') {
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
@@ -6154,7 +6156,6 @@ class Leasing extends CI_Controller
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
                                     $line_no += 10000;
                                 } elseif ($result['gl_code'] == '20.80.01.08.07') {
-
                                     $amawnt = str_replace('-', '', $result['amount']);
                                     $invoicing = $this->db->query("SELECT * FROM invoicing WHERE balance = '{$amawnt}' AND doc_no = '{$result['doc_no']}'")->row();
 
@@ -6353,12 +6354,12 @@ class Leasing extends CI_Controller
                                     $line_no += 10000;
                                 }
 
-                                if (!$vatDisplayed && in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
-                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
+                                // if (!$vatDisplayed && in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
+                                //     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
 
-                                    $line_no += 10000; // Ensure VAT gets a unique line number
-                                    $vatDisplayed = true;
-                                }
+                                //     $line_no += 10000; // Ensure VAT gets a unique line number
+                                //     $vatDisplayed = true;
+                                // }
 
                                 $externalDocNo = ($value['cas_doc_no'] != '') ? $doc_no : "{$doc_no}-{$result['doc_no']}";
                             }
@@ -6986,13 +6987,13 @@ class Leasing extends CI_Controller
     }
     #YAWA NING CAS YWAW NING BIR YAWA NI TANAN - IF EVER MAHIMO KAG PROGRAMMER ANING LEASING, AYAW NA PADAYON, LABAD SA ULO RAY MAKUHA NIMO
     public function generate_ARreports_manual(){
-        $arData = $this->input->post(null);
-        $month = $arData['month'];
-        $month = date('F Y', strtotime($month));
-        $store = $this->session->userdata('store_code');
+        $arData         = $this->input->post(null);
+        $month          = $arData['month'];
+        $month          = date('F Y', strtotime($month));
+        $store          = $this->session->userdata('store_code');
         $upload_by_type = $arData['upload_by_type'];
-        $tntID = "AND sl.tenant_id LIKE '%{$arData['searchInput']}%'";
-        $docNumber = "AND sl.doc_no LIKE '%{$arData['searchInput']}%'";
+        $tntID          = "AND sl.tenant_id LIKE '%{$arData['searchInput']}%'";
+        $docNumber      = "AND sl.doc_no LIKE '%{$arData['searchInput']}%'";
 
         switch ($upload_by_type) {
             case 'Tenant ID':
@@ -7030,19 +7031,18 @@ class Leasing extends CI_Controller
             try {
                 foreach ($ARreports['data'] as $key => $value) {
                     $checkBalance = $this->app_model->checkBalance($value['doc_no'], $value['posting_date']);
-
                     if ($checkBalance->debit > 0) {
-                        $posting_date = date('m/d/Y', strtotime(date('Y-m-t', strtotime($month))));
-                        $company_code = $this->session->userdata('company_code');
-                        $dept_code = $this->session->userdata('dept_code');
-                        $date = new DateTime();
-                        $timeStamp = $date->getTimestamp();
-                        $doc_no = ($value['cas_doc_no'] != '') ? $value['cas_doc_no'] : 'OLS' . date('mdy', strtotime(date('Y-m-t', strtotime($month))));
-                        $report_data = $this->app_model->generate_ARreports($month, "AND sl.tenant_id LIKE '%{$value['tenant_id']}%'");
-                        $data = $report_data['data'];
-                        $doc_nos = $report_data['doc_nos'];
-                        $file_data = '';
-                        $externalDocNo = '';
+                        $posting_date   = date('m/d/Y', strtotime(date('Y-m-t', strtotime($month))));
+                        $company_code   = $this->session->userdata('company_code');
+                        $dept_code      = $this->session->userdata('dept_code');
+                        $date           = new DateTime();
+                        $timeStamp      = $date->getTimestamp();
+                        $doc_no         = ($value['cas_doc_no'] != '') ? $value['cas_doc_no'] : 'OLS' . date('mdy', strtotime(date('Y-m-t', strtotime($month))));
+                        $report_data    = $this->app_model->generate_ARreports($month, "AND sl.tenant_id LIKE '%{$value['tenant_id']}%'");
+                        $data           = $report_data['data'];
+                        $doc_nos        = $report_data['doc_nos'];
+                        $file_data      = '';
+                        $externalDocNo  = '';
 
                         if (!empty($data)) {
                             $line_no = 10000;
@@ -7057,7 +7057,6 @@ class Leasing extends CI_Controller
                                 '20.80.01.08.02' => 'Electricity Charge',
                                 '20.80.01.08.01' => 'Penalty',
                             ];
-
 
                             // Sort $data by gl_code in the specified order
                             usort($data, function ($a, $b) {
@@ -7082,8 +7081,7 @@ class Leasing extends CI_Controller
                                 return array_search($a['gl_code'], $order) - array_search($b['gl_code'], $order);
                             });
 
-                            function formatBillingPeriod($billingPeriod)
-                            {
+                            function formatBillingPeriod($billingPeriod){
                                 error_log("Original billing period: $billingPeriod");
 
                                 // Flexible regex to capture variations in format and capitalization
@@ -7118,18 +7116,19 @@ class Leasing extends CI_Controller
                                 }
 
                                 $otherCharges_query = $this->db->query("
-                                SELECT debit 
-                                FROM subsidiary_ledger 
-                                WHERE doc_no = '{$result['doc_no']}' 
-                                  AND gl_accountID IN ('5', '22', '29')
-                            ");
+                                    SELECT debit 
+                                    FROM subsidiary_ledger 
+                                    WHERE doc_no = '{$result['doc_no']}' 
+                                    AND gl_accountID IN ('5', '22', '29')
+                                ");
 
                                 // Initialize variables
-                                $OC_amount = 0; // Total Other Charges
-                                $amount_noVat = 0; // Amount without VAT
-                                $vat_amount = 0; // VAT (12%)
+                                $OC_amount      = 0; // Total Other Charges
+                                $amount_noVat   = 0; // Amount without VAT
+                                $vat_amount     = 0; // VAT (12%)
 
                                 foreach ($otherCharges_query->result() as $row) {
+                                    // var_dump('row',$row);
                                     $OC_amount += floatval($row->debit); // Sum up all debit values
                                 }
 
@@ -7142,35 +7141,28 @@ class Leasing extends CI_Controller
                                 $vat_amount = number_format($amount_noVat * 0.12, 2, '.', '');
 
 
-                                $pDate = date('F Y', strtotime($result['posting_date']));
-                                $tenantID = str_replace('-', '-OC-', $result['tenant_id']);
-                                $tradeName = substr($result['trade_name'], 0, 36);
-                                $glAccountName = isset($glCodeMapping[$result['gl_code']]) ? $glCodeMapping[$result['gl_code']] : $result['gl_account'];
-                                $dueDateFormatted = date('M d, Y', strtotime($result['due_date']));
+                                $pDate                  = date('F Y', strtotime($result['posting_date']));
+                                $tenantID               = str_replace('-', '-OC-', $result['tenant_id']);
+                                $tradeName              = substr($result['trade_name'], 0, 36);
+                                $glAccountName          = isset($glCodeMapping[$result['gl_code']]) ? $glCodeMapping[$result['gl_code']] : $result['gl_account'];
+                                $dueDateFormatted       = date('M d, Y', strtotime($result['due_date']));
                                 $formattedBillingPeriod = formatBillingPeriod($soa->billing_period);
+                                $vatDisplayed           = false;
 
-                                $vatDisplayed = false;
-
-                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
+                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] === 'Other') {//A/R Non Trade
+                                    array_shift($rows);
                                     $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
-
-                                    $line_no += 10000;
-                                } elseif ($result['gl_code'] == '10.10.01.06.05') {
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
+                                    $vatDisplayed = true;
+                                    $line_no += 10000; 
+                                    // var_dump('rows:',$rows);
+                                } elseif ($result['gl_code'] == '10.10.01.06.05') {//Creditable WHT Receivable
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
                                     // Increment line number for the new row
                                     $line_no += 10000;
-
-                                    // Add a new line for VAT Output
-                                    // $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
-                                    // Add VAT immediately after 10.10.01.06.05
-                                    // $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
-
-                                    // $line_no += 10000; // Ensure VAT has a unique line number
-                                    // $vatDisplayed = true;
-                                } elseif ($result['gl_code'] == '20.80.01.08.07') {
+                                } elseif ($result['gl_code'] == '20.80.01.08.07') {//MI-Charges
                                     $amawnt = str_replace('-', '', $result['amount']);
                                     $invoicing = $this->db->query("SELECT * FROM invoicing WHERE balance = '{$amawnt}' AND doc_no = '{$result['doc_no']}'")->row();
-
                                     // $amount_noVat = round($amawnt / 1.12, 2); // Amount without VAT
                                     $amount_noVat = number_format($amawnt / 1.12, 2, '.', '');
 
@@ -7357,9 +7349,7 @@ class Leasing extends CI_Controller
                                             break;
                                     }
                                     $customDescription = '';
-
                                 } else {
-
                                     $amount = str_replace('-', '', $result['amount']);
                                     // $nv_amount = round($amount / 1.12, 2);
                                     $nv_amount = number_format($amount / 1.12, 2, '.', '');
@@ -7368,22 +7358,11 @@ class Leasing extends CI_Controller
                                     $line_no += 10000; // Increment line number
                                 }
 
-                                // $line_no += 10000;
-                                if (!$vatDisplayed && in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04'])) {
-                                    $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
-
-                                    $line_no += 10000; // Ensure VAT gets a unique line number
-                                    $vatDisplayed = true;
-                                }
-
-
                                 $externalDocNo = ($value['cas_doc_no'] != '') ? $doc_no : "{$doc_no}-{$result['doc_no']}";
                             }
 
-
-
-                            // dump($rows);
-                            // exit();
+                            dump($rows);
+                            exit();
 
                             $exp_batch_no = $this->app_model->generate_ExportNo(true);
                             $filter_date = date('Y-m', strtotime($posting_date));
@@ -7392,7 +7371,6 @@ class Leasing extends CI_Controller
                             // $targetPath   = '\\\172.16.170.10/pos-sales/LEASING/' . $store . '/others/' . $monthfolder["$m"] . '/' . $file_name;
                             $targetPath = getcwd() . '/assets/for_cas/other/' . $file_name;
                             $file_data = arrayToString($rows);
-
                             $toUpdate = ($value['cas_doc_no'] != '') ? ['export_batch_code' => $exp_batch_no] : ['export_batch_code' => $exp_batch_no, 'cas_doc_no' => $externalDocNo];
 
                             foreach ($doc_nos as $doc_no) {
