@@ -425,6 +425,14 @@
 														</div>
 														<div class="row">
 															<div class="form-group">
+																<label for="invoice" class="col-md-5 control-label text-right"><i class="fa fa-asterisk"></i>Invoice No.</label>
+																<div class="col-md-7">
+																	<input class="form-control" type="text" name="invoice_no">
+																</div>
+															</div>
+														</div>
+														<div class="row">
+															<div class="form-group">
 																<label for="amount_paid"
 																	class="col-md-5 control-label text-right"><i
 																		class="fa fa-asterisk"></i>Amount Paid</label>

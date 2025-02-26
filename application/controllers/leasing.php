@@ -2,8 +2,7 @@
     exit('No direct script access allowed');
 }
 
-class Leasing extends CI_Controller
-{
+class Leasing extends CI_Controller{
     function __construct()
     {
         parent::__construct();
@@ -43,14 +42,12 @@ class Leasing extends CI_Controller
         //SET TO FALSE IF PANDEMIC "NO PENALTY RULE" ENDS
         $this->DISABLE_PENALTY = false;
     }
-
     function sanitize($string)
     {
         $string = htmlentities($string, ENT_QUOTES, 'UTF-8');
         $string = trim($string);
         return $string;
     }
-
     function password_crypt()
     {
         echo "<form action='../leasing/password_crypt' method='post'>";
@@ -66,7 +63,6 @@ class Leasing extends CI_Controller
             echo "<a href='../leasing/password_crypt'>CLEAR</a>";
         }
     }
-
     public function invoicing()
     {
         $data = [
@@ -80,7 +76,6 @@ class Leasing extends CI_Controller
         $this->load->view('leasing/accounting/invoicing');
         $this->load->view('leasing/footer');
     }
-
     public function get_tenant_details()
     {
         $trade_name = $this->input->get('trade_name', true);
@@ -97,19 +92,16 @@ class Leasing extends CI_Controller
 
         JSONResponse($tenant);
     }
-
-    public function getTransactionNo()
-    {
-        $tenant_id = $this->input->get('tenant_id', true);
-        $details = $this->app_model->get_tenant_details_2($tenant_id);
-        $docno = '';
+    public function getTransactionNo(){
+        $tenant_id  = $this->input->get('tenant_id', true);
+        $details    = $this->app_model->get_tenant_details_2($tenant_id);
+        $docno      = '';
         $tin_status = 'with';
-        $uft_no = $this->app_model->generate_UTFTransactionNo(false, $tin_status);
-        $ip_no = $this->app_model->generate_InternalTransactionNo(false, $tin_status);
+        $uft_no     = $this->app_model->generate_UTFTransactionNo(false, $tin_status);
+        $ip_no      = $this->app_model->generate_InternalTransactionNo(false, $tin_status);
 
         JSONResponse(compact('uft_no', 'ip_no'));
     }
-
     public function get_document_number()
     {
         $tenant_id = $this->uri->segment(3);
@@ -120,7 +112,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($docno);
     }
-
     public function getnewsoanumber()
     {
         $tenant_id = $this->uri->segment(3);
@@ -131,7 +122,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($docno);
     }
-
     public function getnewpreopdoc()
     {
         $tenant_id = $this->uri->segment(3);
@@ -142,7 +132,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($docno);
     }
-
     public function invoicing_init_data()
     {
         $preop_charges = $this->app_model->get_preopCharges();
@@ -150,21 +139,18 @@ class Leasing extends CI_Controller
 
         JSONResponse(compact('preop_charges', 'cons_materials'));
     }
-
     public function selected_monthly_charges($tenant_id)
     {
         $tenant_id = $this->sanitize($tenant_id);
         $result = $this->app_model->selected_monthly_charges($tenant_id);
         JSONResponse($result);
     }
-
     public function get_otherCharges($tenant_id)
     {
         $tenant_id = $this->sanitize($tenant_id);
         $result = $this->app_model->get_otherCharges($tenant_id);
         JSONResponse($result);
     }
-
     # WITH CAS FUNCTIONS
     public function save_invoice()
     {
@@ -756,7 +742,6 @@ class Leasing extends CI_Controller
             JSONResponse(['type' => 'success', 'msg' => 'Transaction complete!',]);
         }
     }
-
     function generateLatePaymentPenalty($tenant_id = '', $posting_date = '', $due_date = '')
     {
         $tenant_id = $this->sanitize($tenant_id);
@@ -918,7 +903,6 @@ class Leasing extends CI_Controller
 
         return $result;
     }
-
     public function soa()
     {
         // $data['soa_no']          = $this->app_model->get_soaNo(false);
@@ -937,7 +921,6 @@ class Leasing extends CI_Controller
         $this->load->view('leasing/accounting/soa');
         $this->load->view('leasing/footer');
     }
-
     public function get_tenant_balances()
     {
         $tenant_id = $this->sanitize($this->input->post('tenant_id'));
@@ -955,7 +938,6 @@ class Leasing extends CI_Controller
 
         JSONResponse(['docs' => $data, 'advance' => $advance]);
     }
-
     public function generate_soa()
     {
         $tenancy_type = $this->input->post('tenancy_type');
@@ -1884,7 +1866,6 @@ class Leasing extends CI_Controller
             'file' => $file,
         ]);
     }
-
     #SOA PDF
     function createSoaFile($soa, $debit)
     {
@@ -2538,9 +2519,7 @@ class Leasing extends CI_Controller
 
         return $file_name;
     }
-
-    public function payment()
-    {
+    public function payment(){
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
             $tenderTypes = json_encode([
                 ['id' => 1, 'desc' => 'Cash'],
@@ -2568,7 +2547,6 @@ class Leasing extends CI_Controller
             $this->load->view('leasing/footer');
         }
     }
-
     public function preop_transfer()
     {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
@@ -2594,7 +2572,6 @@ class Leasing extends CI_Controller
             $this->load->view('leasing/footer');
         }
     }
-
     public function orentry()
     {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
@@ -2621,7 +2598,6 @@ class Leasing extends CI_Controller
             $this->load->view('leasing/footer');
         }
     }
-
     public function getSoaWithBalances($tenant_id, $posting_date)
     {
         $tenant_id = $this->sanitize($tenant_id);
@@ -2640,7 +2616,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($soa_docs);
     }
-
     public function getInvoicesBySoaNo($tenant_id, $soa_no)
     {
         $tenant_id = $this->sanitize($tenant_id);
@@ -2650,7 +2625,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($data);
     }
-
     public function get_payment_initial_data()
     {
         if ($this->session->userdata('cfs_logged_in')) {
@@ -2674,230 +2648,111 @@ class Leasing extends CI_Controller
 
         JSONResponse(compact('banks', 'uft_no', 'ip_no', 'stores'));
     }
-
-    public function save_payment()
-    {
+    public function save_payment(){
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
-
-        $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
-        $trade_name = $this->sanitize($this->input->post('trade_name'));
-        $tenant_id = $this->sanitize($this->input->post('tenant_id'));
-        $contract_no = $this->sanitize($this->input->post('contract_no'));
-        $tenant_address = $this->sanitize($this->input->post('tenant_address'));
-        $payment_date = $this->sanitize($this->input->post('payment_date'));
-        $soa_no = $this->sanitize($this->input->post('soa_no'));
-        $billing_period = $this->sanitize($this->input->post('billing_period'));
-        $remarks = $this->sanitize($this->input->post('remarks'));
-        $tender_typeCode = $this->sanitize($this->input->post('tender_typeCode'));
-        $receipt_no = $this->sanitize($this->input->post('receipt_no'));
-        $amount_paid = $this->sanitize($this->input->post('amount_paid'));
-        $receipt_type = $this->sanitize($this->input->post('receipt_type'));
-        $tender_amount = $amount_paid;
+        $tenancy_type       = $this->sanitize($this->input->post('tenancy_type'));
+        $trade_name         = $this->sanitize($this->input->post('trade_name'));
+        $tenant_id          = $this->sanitize($this->input->post('tenant_id'));
+        $contract_no        = $this->sanitize($this->input->post('contract_no'));
+        $tenant_address     = $this->sanitize($this->input->post('tenant_address'));
+        $payment_date       = $this->sanitize($this->input->post('payment_date'));
+        $soa_no             = $this->sanitize($this->input->post('soa_no'));
+        $billing_period     = $this->sanitize($this->input->post('billing_period'));
+        $remarks            = $this->sanitize($this->input->post('remarks'));
+        $tender_typeCode    = $this->sanitize($this->input->post('tender_typeCode'));
+        $receipt_no         = $this->sanitize($this->input->post('receipt_no'));
+        $amount_paid        = $this->sanitize($this->input->post('amount_paid'));
+        $receipt_type       = $this->sanitize($this->input->post('receipt_type'));
+        $tender_amount      = $amount_paid;
         // $receipt_no    = $this->app_model->generate_paymentSlipNo();
-        $payment_docs = $this->input->post('payment_docs');
-        $transaction_date = getCurrentDate();
-        $payment_date = date('Y-m-d', strtotime($payment_date));
-
+        $payment_docs       = $this->input->post('payment_docs');
+        $transaction_date   = getCurrentDate();
+        $payment_date       = date('Y-m-d', strtotime($payment_date));
         //IF NOT INTERNAL PAYMENT
-        $bank_code = $this->sanitize($this->input->post('bank_code'));
-        $bank_name = $this->sanitize($this->input->post('bank_name'));
-        $payor = $this->sanitize($this->input->post('payor'));
-        $payee = $this->sanitize($this->input->post('payee'));
-
+        $bank_code          = $this->sanitize($this->input->post('bank_code'));
+        $bank_name          = $this->sanitize($this->input->post('bank_name'));
+        $payor              = $this->sanitize($this->input->post('payor'));
+        $payee              = $this->sanitize($this->input->post('payee'));
         //IF INTERNAL PAYMENT
-        $ip_store_code = $this->sanitize($this->input->post('store_code'));
-        $ip_store_name = $this->sanitize($this->input->post('store_name'));
-
+        $ip_store_code      = $this->sanitize($this->input->post('store_code'));
+        $ip_store_name      = $this->sanitize($this->input->post('store_name'));
         //IF CHECK
-        $check_type = $this->sanitize($this->input->post('check_type'));
-        $bank_code = $this->sanitize($this->input->post('bank_code'));
-        $account_no = $this->sanitize($this->input->post('account_no'));
-        $account_name = $this->sanitize($this->input->post('account_name'));
-        $check_no = $this->sanitize($this->input->post('check_no'));
-        $check_date = $this->sanitize($this->input->post('check_date'));
-        $check_due_date = $this->sanitize($this->input->post('check_due_date'));
-        $expiry_date = $this->sanitize($this->input->post('expiry_date'));
-        $check_class = $this->sanitize($this->input->post('check_class'));
-        $check_category = $this->sanitize($this->input->post('check_category'));
-        $customer_name = $this->sanitize($this->input->post('customer_name'));
-        $check_bank = $this->sanitize($this->input->post('check_bank'));
-        $check_date = date('Y-m-d', strtotime($check_date));
-        $check_due_date = date('Y-m-d', strtotime($check_due_date));
-        $expiry_date = date('Y-m-d', strtotime($expiry_date));
-
+        $check_type         = $this->sanitize($this->input->post('check_type'));
+        $bank_code          = $this->sanitize($this->input->post('bank_code'));
+        $account_no         = $this->sanitize($this->input->post('account_no'));
+        $account_name       = $this->sanitize($this->input->post('account_name'));
+        $check_no           = $this->sanitize($this->input->post('check_no'));
+        $check_date         = $this->sanitize($this->input->post('check_date'));
+        $check_due_date     = $this->sanitize($this->input->post('check_due_date'));
+        $expiry_date        = $this->sanitize($this->input->post('expiry_date'));
+        $check_class        = $this->sanitize($this->input->post('check_class'));
+        $check_category     = $this->sanitize($this->input->post('check_category'));
+        $customer_name      = $this->sanitize($this->input->post('customer_name'));
+        $check_bank         = $this->sanitize($this->input->post('check_bank'));
+        $check_date         = date('Y-m-d', strtotime($check_date));
+        $check_due_date     = date('Y-m-d', strtotime($check_due_date));
+        $expiry_date        = date('Y-m-d', strtotime($expiry_date));
         /*=====================  SETTING VALUES ENDS HERE ==========================*/
+
         /*=====================  VALIDATION STARTS HERE ==========================*/
-
-        $this->form_validation->set_rules(
-            'tenancy_type',
-            'Tenancy Type',
-            'required|in_list[Short Term Tenant,Long Term Tenant]'
-        );
-        $this->form_validation->set_rules(
-            'trade_name',
-            'Trade Name',
-            'required'
-        );
+        $this->form_validation->set_rules('tenancy_type', 'Tenancy Type', 'required|in_list[Short Term Tenant,Long Term Tenant]');
+        $this->form_validation->set_rules('trade_name', 'Trade Name', 'required');
         $this->form_validation->set_rules('tenant_id', 'Tenant ID', 'required');
-        $this->form_validation->set_rules(
-            'contract_no',
-            'Contract No.',
-            'required'
-        );
-        $this->form_validation->set_rules(
-            'tenant_address',
-            'Tenant Address',
-            'required'
-        );
-        $this->form_validation->set_rules(
-            'payment_date',
-            'Payment Date',
-            'required'
-        );
+        $this->form_validation->set_rules('contract_no', 'Contract No.', 'required');
+        $this->form_validation->set_rules('tenant_address', 'Tenant Address', 'required');
+        $this->form_validation->set_rules('payment_date', 'Payment Date', 'required');
         $this->form_validation->set_rules('soa_no', 'SOA No.', 'required');
-        $this->form_validation->set_rules(
-            'billing_period',
-            'Billing Period',
-            'required'
-        );
-        $this->form_validation->set_rules(
-            'tender_typeCode',
-            '',
-            'required|in_list[1,2,3,11,12,80,81]'
-        );
-
+        $this->form_validation->set_rules('billing_period', 'Billing Period', 'required');
+        $this->form_validation->set_rules('tender_typeCode', '', 'required|in_list[1,2,3,11,12,80,81]');
         // $this->form_validation->set_rules('receipt_no', 'Reciept No.', 'required');
-
-        $this->form_validation->set_rules(
-            'amount_paid',
-            'Amount Paid',
-            'required|numeric'
-        );
-        $this->form_validation->set_rules(
-            'payment_docs',
-            'Payment Documents',
-            'required'
-        );
+        $this->form_validation->set_rules('amount_paid', 'Amount Paid', 'required|numeric');
+        $this->form_validation->set_rules('payment_docs', 'Payment Documents', 'required');
 
         if (in_array($tender_typeCode, [1, 2, 3, 11])) {
-            $this->form_validation->set_rules(
-                'bank_code',
-                'Bank Code',
-                'required'
-            );
-            $this->form_validation->set_rules(
-                'bank_name',
-                'Bank Name',
-                'required'
-            );
+            $this->form_validation->set_rules('bank_code', 'Bank Code', 'required');
+            $this->form_validation->set_rules('bank_name', 'Bank Name', 'required');
             $this->form_validation->set_rules('payor', 'Payor', 'required');
             $this->form_validation->set_rules('payee', 'Payee', 'required');
         } else {
             if ($tender_typeCode == 12) {
-                $this->form_validation->set_rules(
-                    'store_code',
-                    'Store Code',
-                    'required'
-                );
-                $this->form_validation->set_rules(
-                    'store_name',
-                    'Store Name',
-                    'required'
-                );
+                $this->form_validation->set_rules('store_code', 'Store Code', 'required');
+                $this->form_validation->set_rules('store_name', 'Store Name', 'required');
             }
-
             $bank_code = null;
             $bank_name = null;
         }
-
         if ($tender_typeCode == '2') {
             if ($this->session->userdata('cfs_logged_in')) {
-                $this->form_validation->set_rules(
-                    'account_no',
-                    'Account No.',
-                    'required'
-                );
-                $this->form_validation->set_rules(
-                    'account_name',
-                    'Account Name',
-                    'required'
-                );
-
+                $this->form_validation->set_rules('account_no', 'Account No.', 'required');
+                $this->form_validation->set_rules('account_name', 'Account Name', 'required');
                 //$this->form_validation->set_rules('expiry_date', 'Expiry Date', 'required');
-
-                $this->form_validation->set_rules(
-                    'check_class',
-                    'Check Class',
-                    'required'
-                );
-                $this->form_validation->set_rules(
-                    'check_category',
-                    'Check Category',
-                    'required'
-                );
-                $this->form_validation->set_rules(
-                    'customer_name',
-                    'Customer Name',
-                    'required'
-                );
-                $this->form_validation->set_rules(
-                    'check_bank',
-                    'Check Bank',
-                    'required'
-                );
+                $this->form_validation->set_rules('check_class', 'Check Class', 'required');
+                $this->form_validation->set_rules('check_category', 'Check Category', 'required');
+                $this->form_validation->set_rules('customer_name', 'Customer Name', 'required');
+                $this->form_validation->set_rules('check_bank', 'Check Bank', 'required');
             }
-
-            $this->form_validation->set_rules(
-                'check_type',
-                'Check Type',
-                'required|in_list[DATED CHEC, POST DATED CHECK]'
-            );
-            $this->form_validation->set_rules(
-                'check_no',
-                'Check No.',
-                'required'
-            );
-            $this->form_validation->set_rules(
-                'check_date',
-                'Check Date',
-                'required'
-            );
+            $this->form_validation->set_rules('check_type', 'Check Type', 'required|in_list[DATED CHEC, POST DATED CHECK]');
+            $this->form_validation->set_rules('check_no', 'Check No.', 'required');
+            $this->form_validation->set_rules('check_date', 'Check Date', 'required');
 
             if (!in_array($check_type, ['DATED CHECK', 'POST DATED CHECK'])) {
                 JSONResponse([
-                    'type' => 'error',
-                    'msg' => 'Invalid Check Type!',
+                    'type'  => 'error',
+                    'msg'   => 'Invalid Check Type!',
                 ]);
             }
-
             if ($check_type == 'POST DATED CHECK') {
-                $this->form_validation->set_rules(
-                    'check_due_date',
-                    'Check Due Date',
-                    'required'
-                );
-
+                $this->form_validation->set_rules('check_due_date', 'Check Due Date', 'required');
                 if (!validDate($check_due_date)) {
-                    JSONResponse([
-                        'type' => 'error',
-                        'msg' => 'Check Due Date is not valid!',
-                    ]);
+                    JSONResponse(['type'  => 'error', 'msg'   => 'Check Due Date is not valid!']);
                 }
             }
-
-            if (
-                $this->session->userdata('cfs_logged_in') &&
-                !validDate($expiry_date)
-            ) {
+            if ($this->session->userdata('cfs_logged_in') && !validDate($expiry_date)) {
                 $expiry_date = '';
                 //JSONResponse(['type'=>'error', 'msg'=>'Check Expiry Date is not valid!']);
             }
-
             if (!validDate($check_date)) {
-                JSONResponse([
-                    'type' => 'error',
-                    'msg' => 'Check Date is not valid!',
-                ]);
+                JSONResponse(['type'  => 'error', 'msg'   => 'Check Date is not valid!']);
             }
         }
 
@@ -2912,14 +2767,14 @@ class Leasing extends CI_Controller
         }
 
         $tender_types = [
-            '1' => 'Cash',
-            '2' => 'Check',
-            '3' => 'Bank to Bank',
-            '4' => 'AR-Employee',
-            '11' => 'Unidentified Fund Transfer',
-            '12' => 'Internal Payment',
-            '80' => 'JV payment - Business Unit',
-            '81' => 'JV payment - Subsidiary',
+            '1'     => 'Cash',
+            '2'     => 'Check',
+            '3'     => 'Bank to Bank',
+            '4'     => 'AR-Employee',
+            '11'    => 'Unidentified Fund Transfer',
+            '12'    => 'Internal Payment',
+            '80'    => 'JV payment - Business Unit',
+            '81'    => 'JV payment - Subsidiary',
         ];
 
         $tender_typeDesc = $tender_types[$tender_typeCode];
@@ -2938,31 +2793,19 @@ class Leasing extends CI_Controller
                 ->get();
 
             if ($upload->has_error()) {
-                JSONResponse([
-                    'type' => 'error',
-                    'msg' => $upload->get_errors('<br>'),
-                ]);
+                JSONResponse(['type' => 'error', 'msg' => $upload->get_errors('<br>')]);
             }
         }
-
         if (in_array($tender_typeCode, ['1', '2', '80', '81', '4'])) {
             if ($this->app_model->checkPaymentReceiptExistence($receipt_no)) {
                 // JSONResponse(['type'=>'error', 'msg'=>'Payment Slip already used!']);
             }
         }
-
         if (!validDate($payment_date)) {
-            JSONResponse([
-                'type' => 'error',
-                'msg' => 'Payment Date is not valid!',
-            ]);
+            JSONResponse(['type' => 'error', 'msg' => 'Payment Date is not valid!']);
         }
-
         if (empty($payment_docs) || !is_array($payment_docs)) {
-            JSONResponse([
-                'type' => 'error',
-                'msg' => 'Payment documents are required!',
-            ]);
+            JSONResponse(['type' => 'error', 'msg' => 'Payment documents are required!']);
         }
 
         $total_payable = 0;
@@ -2978,42 +2821,33 @@ class Leasing extends CI_Controller
         );
 
         if ($total_payable < 1) {
-            JSONResponse([
-                'type' => 'error',
-                'msg' => 'Total Payable amount can\'t be 0.00',
-            ]);
+            JSONResponse(['type' => 'error', 'msg' => 'Total Payable amount can\'t be 0.00']);
         }
 
         if ($amount_paid <= 0) {
-            JSONResponse([
-                'type' => 'error',
-                'msg' => 'Amount paid can\'t be 0.00',
-            ]);
+            JSONResponse(['type' => 'error', 'msg' => 'Amount paid can\'t be 0.00']);
         }
 
         $tenant = $this->app_model->getTenantByTenantID($tenant_id);
 
         try {
-            $store_code = $this->app_model->tenant_storeCode($tenant_id);
-            $store = $this->app_model->getStore($store_code);
-            $soa_display['store'] = $store;
+            $store_code             = $this->app_model->tenant_storeCode($tenant_id);
+            $store                  = $this->app_model->getStore($store_code);
+            $soa_display['store']   = $store;
 
             if (empty($store_code) || empty($store) || empty($tenant)) {
                 throw new Exception('Invalid Tenant');
             }
         } catch (Exception $e) {
-            JSONResponse([
-                'type' => 'error',
-                'msg' => 'Invalid Tenant! Tenant might be terminated.',
-            ]);
+            JSONResponse(['type' => 'error', 'msg' => 'Invalid Tenant! Tenant might be terminated.']);
         }
 
         /*=====================  VALIDATION ENDS HERE ==========================*/
 
-        $details = $this->app_model->get_tenant_details_2($tenant_id);
-        $docno = '';
+        $details    = $this->app_model->get_tenant_details_2($tenant_id);
+        $docno      = '';
         $tin_status = 'with';
-        $tinStatus = ['ON PROCESS', 'NO TIN', '', null, '000-000-000', '000-000-000-000'];
+        $tinStatus  = ['ON PROCESS', 'NO TIN', '', null, '000-000-000', '000-000-000-000'];
 
         //SET UFT OR IP PAYMENT DOC. NO.
         switch ($tender_typeCode) {
@@ -3564,7 +3398,6 @@ class Leasing extends CI_Controller
 
         JSONResponse(['type' => 'success', 'msg' => 'Payment successfully posted!',]);
     }
-
     #PAYMENT PDF
     function createPaymentDocsFile($pmt)
     {
@@ -3851,7 +3684,6 @@ class Leasing extends CI_Controller
         $pdf->Output('assets/pdf/' . $file_name, 'F');
         return $file_name;
     }
-
     public function preop_payment()
     {
         $data['payment_docNo'] = $this->app_model->payment_docNo(false, 'with');
@@ -3865,7 +3697,6 @@ class Leasing extends CI_Controller
         $this->load->view('leasing/accounting/preop_payment');
         $this->load->view('leasing/footer');
     }
-
     public function get_preop_balance($tenant_id = '', $gl_account = '')
     {
         $tenant_id = str_replace('%20', ' ', $tenant_id);
@@ -3875,7 +3706,6 @@ class Leasing extends CI_Controller
             $this->app_model->get_preop_balance($tenant_id, $gl_account)
         );
     }
-
     public function getPreopPaymentInvoicesBySoaNo($tenant_id, $soa_no)
     {
         $tenant_id = $this->sanitize($tenant_id);
@@ -3889,7 +3719,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($data);
     }
-
     public function save_paymentUsingPreop()
     {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
@@ -4294,7 +4123,6 @@ class Leasing extends CI_Controller
             'file' => $payment_report,
         ]);
     }
-
     public function advance_payment()
     {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
@@ -4328,7 +4156,6 @@ class Leasing extends CI_Controller
             $this->load->view('leasing/footer');
         }
     }
-
     public function save_advancePayment()
     {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
@@ -4797,7 +4624,6 @@ class Leasing extends CI_Controller
 
         JSONResponse(['type' => 'success', 'msg' => 'Payment successfully posted!',]);
     }
-
     public function save_transferedPreop()
     {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
@@ -5114,7 +4940,6 @@ class Leasing extends CI_Controller
         JSONResponse(['type' => 'success', 'msg' => 'Payment successfully posted!']);
 
     }
-
     #ADVANCE PAYMENT PDF
     function createAdvancePaymentDocsFile($pmt)
     {
@@ -5430,7 +5255,6 @@ class Leasing extends CI_Controller
 
         return $file_name;
     }
-
     public function prepost_old_soa_action($tenant_id, $date = null)
     {
         $res = $this->prepost_old_soa($tenant_id, $date);
@@ -5441,7 +5265,6 @@ class Leasing extends CI_Controller
             : 'No invoice preposted!'
         );
     }
-
     private function prepost_old_soa($tenant_id, $date = null)
     {
         $success = 0;
@@ -5508,7 +5331,6 @@ class Leasing extends CI_Controller
 
         return $success > 0;
     }
-
     public function get_managers_key()
     {
         $username = $this->sanitize($this->input->post('username'));
@@ -5548,7 +5370,6 @@ class Leasing extends CI_Controller
 
         JSONResponse(['type' => 'error', 'msg' => 'Invalid Credentials!']);
     }
-
     public function recon_sys_vs_nav()
     {
         $data['current_date'] = getCurrentDate();
@@ -5562,7 +5383,6 @@ class Leasing extends CI_Controller
         $this->load->view('leasing/recon_sys_vs_nav');
         $this->load->view('leasing/footer');
     }
-
     public function generate_recon_sys_vs_nav_report()
     {
         $store = $this->sanitize($this->input->post('store'));
@@ -5638,7 +5458,6 @@ class Leasing extends CI_Controller
 
         download_send_headers($file_name, $csv_data);
     }
-
     public function recon_sys_vs_bank()
     {
         $data['current_date'] = getCurrentDate();
@@ -5652,7 +5471,6 @@ class Leasing extends CI_Controller
         $this->load->view('leasing/recon_sys_vs_bank');
         $this->load->view('leasing/footer');
     }
-
     public function generate_recon_sys_vs_bank_report()
     {
         //$store      = $this->sanitize($this->input->post('store'));
@@ -5740,7 +5558,6 @@ class Leasing extends CI_Controller
 
         download_send_headers($file_name, $csv_data);
     }
-
     public function invoice_override_history()
     {
         $data['current_date'] = getCurrentDate();
@@ -5752,7 +5569,6 @@ class Leasing extends CI_Controller
         $this->load->view('leasing/accounting/invoice_override_history');
         $this->load->view('leasing/footer');
     }
-
     public function get_invoice_override_data($tenant_id = '')
     {
         $tenant_id = $this->sanitize($tenant_id);
@@ -5761,7 +5577,6 @@ class Leasing extends CI_Controller
 
         JSONResponse($data);
     }
-
     function test_date_diff($last_due, $due_date)
     {
         $daylen = 60 * 60 * 24;
@@ -5775,7 +5590,6 @@ class Leasing extends CI_Controller
         $current_due = strtotime($due_date . '-20 days');
         dump($current_due);
     }
-
     function test_date_diff2($last_due, $due_date)
     {
         $last_due = date_create($last_due);
@@ -5797,7 +5611,6 @@ class Leasing extends CI_Controller
         $current_due = strtotime($due_date[$i] . "-20 days");
         dump($current_due);*/
     }
-
     function testpage()
     {
         //dump(DecimalToWord::convert(1599.6, 'Pesos', 'Centavos'));
@@ -5816,13 +5629,11 @@ class Leasing extends CI_Controller
             dump('HELLO');
         }
     }
-
     public function getAdvanceTransactionNo()
     {
         $transactionNo = $this->app_model->getAdvanceTransactionNo(false);
         JSONResponse($transactionNo);
     }
-
     #------------------------------------------------------ AUTO EXTRACTION ------------------------------------------------------#
     # FOR EXTRACTION CAS TEXT FILE
     public function generate_RRreports($tenant_id, $posting_date)
@@ -7703,12 +7514,6 @@ class Leasing extends CI_Controller
 
         echo json_encode($msg);
     }
-
-
-
-
-
-
     public function generate_PreopReports_manual()
     {
         $arData = $this->input->post(null);
@@ -7888,7 +7693,6 @@ class Leasing extends CI_Controller
     }
     #------------------------------------------------------ MANUAL EXTRACTION ------------------------------------------------------#
 
-
     public function RR_reports_internal()
     {
         if ($this->session->userdata('leasing_logged_in')) {
@@ -7904,7 +7708,6 @@ class Leasing extends CI_Controller
             redirect('ctrl_leasing/');
         }
     }
-
     public function AR_reports_internal()
     {
         if ($this->session->userdata('leasing_logged_in')) {
@@ -7920,7 +7723,6 @@ class Leasing extends CI_Controller
             redirect('ctrl_leasing/');
         }
     }
-
     public function collection_reports_internal()
     {
         if ($this->session->userdata('leasing_logged_in')) {
@@ -7986,7 +7788,6 @@ class Leasing extends CI_Controller
             ]);
         }
     }
-
     public function soaReprintNew()
     {
         $file = $this->uri->segment('3');
@@ -8131,9 +7932,6 @@ class Leasing extends CI_Controller
     // }
     // ================================ gwaps ===========================================
 
-
-
-
     public function paymentReprintNew()
     {
         $file = $this->uri->segment('3');
@@ -8226,7 +8024,6 @@ class Leasing extends CI_Controller
         // dump($pms);
         // dump($prospect);
     }
-
     public function uploadToCCM()
     {
         if ($tender_typeCode == '2' && $this->session->userdata('cfs_logged_in')) {
@@ -8259,7 +8056,6 @@ class Leasing extends CI_Controller
             $this->ccm_model->insert('checks', $ccm_data);
         }
     }
-
     public function generate_URIClosing()
     {
         $tenant_id = 'ICM-LT000001';
@@ -8413,7 +8209,6 @@ class Leasing extends CI_Controller
                 break;
         }
     }
-
     public function docs()
     {
         $this->load->view('docs/docs');
