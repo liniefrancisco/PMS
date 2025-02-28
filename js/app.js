@@ -5399,11 +5399,11 @@ myApp.controller('transactionController', function ($scope, $http, $timeout, $in
     $scope.generate_ARreports = function (e) {
         e.preventDefault();
 
-        let document_type = $scope.AR_document_type;
-        var formData = new FormData(e.target);
-        var url1 = `${$base_url}leasing/generate_ARreports_manual`;
-        var url2 = `${$base_url}leasing_transaction/generate_ARreports`;
-        var url3 = `${$base_url}leasing/generate_PreopReports_manual`;
+        let document_type   = $scope.AR_document_type;
+        var formData        = new FormData(e.target);
+        var url1            = `${$base_url}leasing/generate_ARreports_manual`;
+        var url2            = `${$base_url}leasing_transaction/generate_ARreports`;
+        var url3            = `${$base_url}leasing/generate_PreopReports_manual`;
 
         if (document_type === 'inv') {
             site = url1;

@@ -340,6 +340,67 @@ class Excel extends PHPExcel
     }
 
 
+    public function generate_monthly_receivable_summary_new1($reportDataNew, $filename, $month)
+    {
+        header('Content-type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename=' . $filename . '.xls');
+
+        $header = ['Tenant ID', 'Trade Name', 'TIN #', 'Basic', 'Others', 'Total'];
+        echo "<h3>Monthly Receivable Summary for the month of " . strtoupper($month) . "<h3><br>";
+        echo '<table border = "0"><tr>';
+        for ($i = 0; $i < count($header); $i++) {
+            echo '<th>' . ucwords($header[$i]) . '</th>';
+        }
+        echo '</tr>';
+
+        $basic_total = 0;
+        $others_total = 0;
+        $all_total = 0;
+
+
+        foreach ($reportDataNew as $value) {
+            if ($value['total'] > 0) { // Exclude rows where total is zero
+                echo '<tr>';
+                $this->writeRow($value['tenant_id']);
+                $this->writeRow($value['trade_name']);
+                $this->writeRow($value['tin']); // Display TIN
+
+                // Display Basic and Others amounts, with a fallback to 0
+                $basic = isset($value['basic']) ? $value['basic'] : 0;
+                $others = isset($value['others']) ? $value['others'] : 0;
+                $total = $basic + $others; // Total of basic and others
+
+                $this->writeMonetary($basic); // Write Basic amount
+                $this->writeMonetary($others); // Write Others amount
+                $this->writeMonetary($total); // Write Total amount
+
+                // Accumulate totals
+                $basic_total += $basic;
+                $others_total += $others;
+                $all_total += $total;
+
+                echo '</tr>';
+            }
+        }
+
+        // Rent Receivable and Account Receivable totals
+        echo "<tr></tr><tr>";
+        echo "<td><b>Rent Receivable</b></td><td></td>";
+        echo $this->writeMonetary($basic_total);
+        echo "</tr><tr>";
+        echo "<td><b>Account Receivable</b></td><td></td>";
+        echo $this->writeMonetary($others_total);
+        echo "</tr>";
+
+        // Grand Total
+        echo "<tr><td><b>Total</b></td><td></td>";
+        echo $this->writeMonetary($all_total);
+        echo "</tr>";
+
+        echo '</table>';
+    }
+
+
     // --------------------------------------------
 
     function generate_ar_ar_summary($total_due, $previous, $current, $amount_paid, $month, $filename, $tenant_type)
