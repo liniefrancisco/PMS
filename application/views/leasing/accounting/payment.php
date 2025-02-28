@@ -46,8 +46,6 @@
 																	class="fa fa-asterisk"></i>Trade Name</label>
 															<div class="col-md-7">
 																<div>
-
-
 																	<div mass-autocomplete>
 																		<input
 																			onkeyup="this.value = this.value.toUpperCase();"
@@ -423,6 +421,20 @@
 																</div>
 															</div>
 														</div>
+
+														<div class="row" ng-if="pmt.selected_docs.length">
+														    <div class="form-group">
+														        <label class="col-md-5 control-label text-right"><i class="fa fa-asterisk"></i>SVI No.</label>
+														        <div class="col-md-7">
+														            <div ng-repeat="doc in pmt.selected_docs">
+														                <label>{{ doc.doc_no }}</label>
+														                <!-- <input type="text" class="form-control" name="svi_no[]" ng-model="doc.svi_no" placeholder="Enter SVI No."> -->
+														                <input type="text" class="form-control" name="svi_no[{{ doc.doc_no }}]" ng-model="doc.svi_no" placeholder="Enter SVI No.">
+														            </div>
+														        </div>
+														    </div>
+														</div>
+
 														<div class="row">
 															<div class="form-group">
 																<label for="amount_paid"

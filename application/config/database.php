@@ -24,11 +24,10 @@ $active_record = TRUE;
 
 # ============ FOR ICM, ALTA, PM, TUBIGON, AM
 $db['default']['hostname'] = '172.16.170.10';
-$db['default']['port'] = '3306';
+$db['default']['port'] 	   = '3306';
 $db['default']['username'] = 'leasing';
 $db['default']['password'] = 'leasing2023';
-// $db['default']['database'] = 'concern';
-$db['default']['database'] = 'agc-pms-cas-local1';
+$db['default']['database'] = 'my-agc-pms-cas';
 $db['default']['dbdriver'] = 'mysqli';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = TRUE;

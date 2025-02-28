@@ -3500,7 +3500,6 @@ class Leasing_mstrfile extends CI_Controller
             $rental_rate = str_replace(",", "", $this->sanitize($this->input->post('rental_rate')));
             $floor_id = $this->app_model->get_floorID($store_name, $floor_name);
 
-
             if ($floor_area != '0.00' && $rental_rate != '0.00') {
 
                 // =================== Insert to Location Code table =========== //
@@ -3522,6 +3521,10 @@ class Leasing_mstrfile extends CI_Controller
                 // if ($this->app_model->update($data, $id_to_update, 'location_slot')) {
                 //     $this->session->set_flashdata('message', 'Updated');
                 // }
+<<<<<<< HEAD
+=======
+
+>>>>>>> local
                 // gwaps ===============
                 $status = 'Active';
                 $data1 = array(
