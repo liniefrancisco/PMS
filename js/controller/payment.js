@@ -11,7 +11,7 @@ window.myApp.controller(
     $rootScope,
     $interval
   ) {
-    $scope.pmt = { application: null };
+    $scope.pmt = { application: null};
     $scope.tenant;
     $scope.invoices = [];
     $scope.payment_docs = [];
@@ -35,7 +35,6 @@ window.myApp.controller(
       $scope.payment_docs = [];
       $scope.getInitData();
     };
-
     $scope.getInitData = function () {
       let url = $base_url + "leasing/get_payment_initial_data";
 
@@ -54,7 +53,6 @@ window.myApp.controller(
         "json"
       );
     };
-
     $scope.getTransactionNo = function (tender_typeCode) {
       let tenant_id = $scope.tenant.tenant_id;
       var data = { tenant_id };
@@ -73,7 +71,6 @@ window.myApp.controller(
         );
       }
     };
-
     $scope.generate_paymentCredentials = function (trade_name, tenancy_type) {
       $scope.payment_docs = [];
       $scope.pmt.soa_docs = [];
@@ -98,18 +95,14 @@ window.myApp.controller(
         "json"
       );
     };
-
     $scope.testttt = function (trade_name, tenancy_type) {
       alert(trade_name);
       console.log(tenancy_type);
     };
-
     $scope.asd = function () {
       alert();
     };
-
     var loader = null;
-
     $scope.getSoaWithBalances = function (tenant_id, posting_date) {
       $scope.payment_docs = [];
       $scope.pmt.soa_docs = [];
@@ -142,15 +135,13 @@ window.myApp.controller(
         "json"
       );
     };
-
     $scope.getInvoicesBySoaNo = async function (tenant_id, soa_no) {
       if (!soa_no || soa_no == "" || soa_no.length == 0) {
         return;
       }
-
-      $scope.payment_docs = [];
-      $scope.invoices = [];
-      $scope.pmt.application = null;
+      $scope.payment_docs     = [];
+      $scope.invoices         = [];
+      $scope.pmt.application  = null;
 
       if (!loader) {
         loader = pop.loading("Collecting data. Please wait ...");
@@ -171,7 +162,6 @@ window.myApp.controller(
 
       loader.modal("hide");
     };
-
     $scope.selectInvoice = function (invoice) {
       let arr_num = $scope.invoices.map(function (i) {
         if (!i.sequence) return 0;
@@ -184,7 +174,6 @@ window.myApp.controller(
 
       //console.log($scope.invoices);
     };
-
     $scope.getSelectedInvoices = function () {
       let selectedInvs = $scope.invoices.filter((inv) => {
         return inv.selected;
@@ -192,47 +181,48 @@ window.myApp.controller(
 
       return selectedInvs;
     };
-
     $scope.applySelectedInvoices = function () {
       pop.confirm(
         "Are you sure you want to apply the payment to this selected invoices?",
         (res) => {
           if (!res) return;
-
           $scope.payment_docs = [];
-
-          let selectedInvs = $scope.getSelectedInvoices();
+          let selectedInvs    = $scope.getSelectedInvoices();
 
           let sortedInvs = selectedInvs.sort(function (a, b) {
             if (a.sequence == b.sequence) return 0;
-
             return b.sequence < a.sequence ? 1 : -1;
           });
 
-          $scope.payment_docs = sortedInvs;
-
-          $scope.pmt.application = "Apply To";
-
+          $scope.payment_docs       = sortedInvs;
+          $scope.pmt.application    = "Apply To";
+          $scope.pmt.selected_docs  = $scope.payment_docs.map((invoice) => ({//Added by Linie
+            doc_no: invoice.doc_no,
+            svi_no: invoice.svi_no || ""
+          }));
           $scope.$apply();
-
           $("#apply-to-modal").modal("hide");
         }
       );
     };
-
     $scope.applyOldToNewest = function () {
       pop.confirm(
         "Are you sure you want to apply payment base on invoice's posting date? <br/><b>(OLDEST TO NEWEST)</b>",
         (res) => {
           if (!res) return;
-
-          $scope.payment_docs = $scope.invoices;
-          $scope.pmt.application = "Oldest to Newest";
+          $scope.payment_docs       = $scope.invoices;
+          $scope.pmt.application    = "Oldest to Newest";
+          $scope.pmt.selected_docs  = $scope.payment_docs.map((invoice) => ({//Added by Linie
+            doc_no: invoice.doc_no,
+            svi_no: invoice.svi_no || ""
+          }));
+          console.log('application:',$scope.pmt.application);
+          console.log('selected_docs:',$scope.pmt.selected_docs);
+          console.log('payment_docs:',$scope.payment_docs);
           $scope.$apply();
         }
       );
     };
-
     $scope.totalPayable = function () {
       let total = 0;
 
@@ -242,7 +232,6 @@ window.myApp.controller(
 
       return total;
     };
-
     $scope.savePayment = function (e) {
       e.preventDefault();
 
@@ -303,16 +292,13 @@ window.myApp.controller(
         });
       });
     };
-
     var ccm_customers = [];
-
     $scope.getCcmCustomers = function () {
       let url = $base_url + "ctrl_cfs/populate_ccm_customer";
       $http.post(url).success(function (result) {
         ccm_customers = result;
       });
     };
-
     $scope.ccm_cust_autocomplete = {
       suggest: (term) => {
         var q = term.toLowerCase().trim();
@@ -328,7 +314,6 @@ window.myApp.controller(
         return results;
       },
     };
-
     $scope.get_paymentScheme = function (trade_name, tenancy_type) {
       var objData = { trade_name: trade_name, tenancy_type: tenancy_type };
       $http
@@ -347,12 +332,10 @@ window.myApp.controller(
           $rootScope.$emit("CallTablelistMethod", url_payment);
         });
     };
-
     $scope.getTransactionNo2 = function (data) {
       var paymentSchemeID = data.id;
       $("#transaction_number").val(paymentSchemeID);
     };
-
     $scope.addORNumber = function (e) {
       e.preventDefault();
 

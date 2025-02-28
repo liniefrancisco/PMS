@@ -14665,8 +14665,7 @@ class App_model extends CI_model
         return compact('data', 'doc_nos');
     }
 
-    public function generate_paymentCollection($post_date, $tosearch)
-    {
+    public function generate_paymentCollection($post_date, $tosearch){
         return $this->db->query("SELECT 
                                     tbl.*,
                                     SUM(tbl.db) AS debit,
@@ -16127,10 +16126,9 @@ class App_model extends CI_model
         return $query;
     }
 
-    public function getInvoicesBySoaNo($tenant_id, $soa_no, $pmt_type = '')
-    {
-        $docs = $this->db->query("SELECT * FROM soa_line WHERE soa_no='$soa_no' AND tenant_id = '$tenant_id'")->result_object();
-        $invs = [];
+    public function getInvoicesBySoaNo($tenant_id, $soa_no, $pmt_type = ''){
+        $docs   = $this->db->query("SELECT * FROM soa_line WHERE soa_no='$soa_no' AND tenant_id = '$tenant_id'")->result_object();
+        $invs   = [];
         $preops = [];
 
         foreach ($docs as $key => $doc) {
