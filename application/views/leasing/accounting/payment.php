@@ -423,530 +423,557 @@
 														</div>
 
 														<div class="row" ng-if="pmt.selected_docs.length">
-														    <div class="form-group">
-														        <label class="col-md-5 control-label text-right"><i class="fa fa-asterisk"></i>SVI No.</label>
-														        <div class="col-md-7">
-														            <div ng-repeat="doc in pmt.selected_docs">
-														                <label>{{ doc.doc_no }}</label>
-														                <!-- <input type="text" class="form-control" name="svi_no[]" ng-model="doc.svi_no" placeholder="Enter SVI No."> -->
-														                <input type="text" class="form-control" name="svi_no[{{ doc.doc_no }}]" ng-model="doc.svi_no" placeholder="Enter SVI No.">
-														            </div>
-														        </div>
-														    </div>
-														</div>
-
-														<div class="row">
 															<div class="form-group">
-																<label for="amount_paid"
-																	class="col-md-5 control-label text-right"><i
-																		class="fa fa-asterisk"></i>Amount Paid</label>
+																<label class="col-md-5 control-label text-right"><i
+																		class="fa fa-asterisk"></i>SVI No.</label>
 																<div class="col-md-7">
-																	<div class="input-group">
-																		<div class="input-group-addon">
-																			<strong>&#8369;</strong>
-																		</div>
-																		<input type="text" required
-																			class="form-control currency"
-																			ng-model="pmt.amount_paid"
-																			ui-number-mask="2" autocomplete="off">
-																		<input type="hidden" name="amount_paid"
-																			ng-value="pmt.amount_paid">
+																	<div ng-repeat="doc in pmt.selected_docs">
+																		<label>{{ doc.doc_no }}</label>
+																		<!-- <input type="text" class="form-control" name="svi_no[]" ng-model="doc.svi_no" placeholder="Enter SVI No."> -->
+																		<input type="text" class="form-control"
+																			name="svi_no[{{ doc.doc_no }}]"
+																			ng-model="doc.svi_no"
+																			placeholder="Enter SVI No.">
 																	</div>
 																</div>
 															</div>
-														</div>
-														<div class="row" ng-if="in_array(tender_typeCode, [1,2,3,11])">
-															<div class="form-group">
-																<label for="bank_code"
-																	class="col-md-5 control-label text-right">
-																	<i class="fa fa-asterisk"
-																		ng-if="in_array(tender_typeCode, [1,2,3,11])"></i>Bank
-																	Code
-																</label>
-																<div class="col-md-7">
-																	<select
-																		ng-required="in_array(tender_typeCode, [1,2,3,11])"
-																		ng-disabled="!in_array(tender_typeCode, [1,2,3,11])"
-																		ng-model="pmt.bank" class="form-control"
-																		ng-options="bank as bank.bank_code for bank in banks">
-																	</select>
-																	<input type="hidden" name="bank_code"
-																		ng-value="pmt.bank.bank_code">
+
+															<div class="row">
+																<div class="form-group">
+																	<label for="amount_paid"
+																		class="col-md-5 control-label text-right"><i
+																			class="fa fa-asterisk"></i>Amount
+																		Paid</label>
+																	<div class="col-md-7">
+																		<div class="input-group">
+																			<div class="input-group-addon">
+																				<strong>&#8369;</strong>
+																			</div>
+																			<input type="text" required
+																				class="form-control currency"
+																				ng-model="pmt.amount_paid"
+																				ui-number-mask="2" autocomplete="off">
+																			<input type="hidden" name="amount_paid"
+																				ng-value="pmt.amount_paid">
+																		</div>
+																	</div>
 																</div>
 															</div>
-														</div>
-														<div class="row" ng-if="in_array(tender_typeCode, [1,2,3,11])">
-															<div class="form-group">
-																<label for="bank"
-																	class="col-md-5 control-label text-right">
-																	<i class="fa fa-asterisk"
-																		ng-if="in_array(tender_typeCode, [1,2,3,11])"></i>Bank
-																	Name
-																</label>
-																<div class="col-md-7">
-																	<input type="text" class="form-control"
-																		name="bank_name" ng-value="pmt.bank.bank_name"
-																		readonly=""
-																		ng-required="in_array(tender_typeCode, [1,2,3,11])"
-																		ng-disabled="!in_array(tender_typeCode, [1,2,3,11])">
+															<div class="row"
+																ng-if="in_array(tender_typeCode, [1,2,3,11])">
+																<div class="form-group">
+																	<label for="bank_code"
+																		class="col-md-5 control-label text-right">
+																		<i class="fa fa-asterisk"
+																			ng-if="in_array(tender_typeCode, [1,2,3,11])"></i>Bank
+																		Code
+																	</label>
+																	<div class="col-md-7">
+																		<select
+																			ng-required="in_array(tender_typeCode, [1,2,3,11])"
+																			ng-disabled="!in_array(tender_typeCode, [1,2,3,11])"
+																			ng-model="pmt.bank" class="form-control"
+																			ng-options="bank as bank.bank_code for bank in banks">
+																		</select>
+																		<input type="hidden" name="bank_code"
+																			ng-value="pmt.bank.bank_code">
+																	</div>
 																</div>
 															</div>
-														</div>
+															<div class="row"
+																ng-if="in_array(tender_typeCode, [1,2,3,11])">
+																<div class="form-group">
+																	<label for="bank"
+																		class="col-md-5 control-label text-right">
+																		<i class="fa fa-asterisk"
+																			ng-if="in_array(tender_typeCode, [1,2,3,11])"></i>Bank
+																		Name
+																	</label>
+																	<div class="col-md-7">
+																		<input type="text" class="form-control"
+																			name="bank_name"
+																			ng-value="pmt.bank.bank_name" readonly=""
+																			ng-required="in_array(tender_typeCode, [1,2,3,11])"
+																			ng-disabled="!in_array(tender_typeCode, [1,2,3,11])">
+																	</div>
+																</div>
+															</div>
+
+															<?php if ($this->session->userdata('cfs_logged_in')): ?>
+																<div class="row" ng-if="tender_typeCode != '12'">
+																	<div class="form-group">
+																		<label for="payee"
+																			class="col-md-5 control-label text-right">Payor</label>
+																		<div class="col-md-7">
+																			<input type="text" ng-value="tenant.trade_name"
+																				name="payor" readonly class="form-control">
+																		</div>
+																	</div>
+																</div>
+																<div class="row" ng-if="tender_typeCode != '12'">
+																	<div class="form-group">
+																		<label for="payee"
+																			class="col-md-5 control-label text-right">Payee</label>
+																		<div class="col-md-7">
+																			<input type="text" value="<?= $payee; ?>"
+																				name="payee" required readonly
+																				class="form-control">
+
+																			<!-- FOR ERRORS -->
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.payee.$dirty && frm_payment.payee.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															<?php endif; ?>
+														</div> <!-- col-md-6 divider -->
+
 
 														<?php if ($this->session->userdata('cfs_logged_in')): ?>
-															<div class="row" ng-if="tender_typeCode != '12'">
-																<div class="form-group">
-																	<label for="payee"
-																		class="col-md-5 control-label text-right">Payor</label>
-																	<div class="col-md-7">
-																		<input type="text" ng-value="tenant.trade_name"
-																			name="payor" readonly class="form-control">
+															<div class="col-md-6">
+
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_no"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Type</label>
+																		<div class="col-md-7">
+																			<select name="check_type" class="form-control"
+																				ng-model="pmt.check_type"
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'">
+																				<option>DATED CHECK</option>
+																				<option>POST DATED CHECK</option>
+																			</select>
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.check_type.$dirty && frm_payment.check_type.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="account_no"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Account
+																			Number</label>
+																		<div class="col-md-7">
+																			<input type="text" ng-model="account_no"
+																				id="account_no" name="account_no" required
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'"
+																				class="form-control">
+																			<!-- FOR ERRORS -->
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.account_no.$dirty && frm_payment.account_no.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="account_name"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Account
+																			Name</label>
+																		<div class="col-md-7">
+																			<input type="text" ng-model="account_name"
+																				id="account_name" name="account_name"
+																				required
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'"
+																				class="form-control">
+																			<!-- FOR ERRORS -->
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.account_name.$dirty && frm_payment.account_name.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_no"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Number</label>
+																		<div class="col-md-7">
+																			<input type="text" ng-model="pmt.check_no"
+																				id="check_no" name="check_no" required
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'"
+																				class="form-control">
+																			<!-- FOR ERRORS -->
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.check_no.$dirty && frm_payment.check_no.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_date"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Date</label>
+																		<div class="col-md-7">
+																			<div class="input-group">
+																				<div class="input-group-addon input-date">
+																					<strong><i
+																							class="fa fa-calendar"></i></strong>
+																				</div>
+																				<datepicker date-format="yyyy-M-dd">
+																					<input type="text" required readonly
+																						ng-disabled="tender_typeCode != '2'"
+																						ng-required="tender_typeCode == '2'"
+																						placeholder="Choose a date"
+																						class="form-control"
+																						ng-model="pmt.check_date"
+																						id="check_date" name="check_date"
+																						autocomplete="off">
+																				</datepicker>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_date"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Due Date</label>
+																		<div class="col-md-7">
+																			<div class="input-group">
+																				<div class="input-group-addon input-date">
+																					<strong><i
+																							class="fa fa-calendar"></i></strong>
+																				</div>
+																				<datepicker date-format="yyyy-M-dd">
+																					<input type="text" readonly
+																						ng-disabled="tender_typeCode != '2' || pmt.check_type != 'POST DATED CHECK'"
+																						ng-required="tender_typeCode == '2' && pmt.check_type == 'POST DATED CHECK'"
+																						placeholder="Choose a date"
+																						class="form-control"
+																						ng-model="pmt.check_due_date"
+																						name="check_due_date"
+																						autocomplete="off">
+																				</datepicker>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="expiry_date"
+																			class="col-md-5 control-label text-right">
+																			<!-- <i class="fa fa-asterisk"></i> -->Expiry
+																			Date
+																		</label>
+																		<div class="col-md-7">
+																			<div class="input-group">
+																				<div class="input-group-addon input-date">
+																					<strong><i
+																							class="fa fa-calendar"></i></strong>
+																				</div>
+																				<datepicker date-format="yyyy-M-dd">
+																					<input type="text" readonly
+																						ng-disabled="tender_typeCode != '2'"
+																						placeholder="Choose a date"
+																						class="form-control"
+																						ng-model="expiry_date"
+																						id="expiry_date" name="expiry_date"
+																						autocomplete="off">
+																				</datepicker>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="bank"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Class</label>
+																		<div class="col-md-7">
+																			<select id="check_class" ng-model="check_class"
+																				name="check_class" required
+																				class="form-control"
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'">
+																				<option value="" disabled="" selected=""
+																					style="display:none">Please Select One
+																					if
+																					Check</option>
+																				<option>COMPANY</option>
+																				<option>GOVERNMENT</option>
+																				<option>PERSONAL</option>
+																				<option>SUPPLIER</option>
+																			</select>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="bank"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Category</label>
+																		<div class="col-md-7">
+																			<select id="check_category"
+																				ng-model="check_category"
+																				name="check_category" class="form-control"
+																				required
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'">
+																				<option value="" disabled="" selected=""
+																					style="display:none">Please Select One
+																					if
+																					Check</option>
+																				<option>LOCAL</option>
+																				<option>MANILA</option>
+																				<option>NATIONAL</option>
+																				<option>REGIONAL</option>
+																			</select>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="customer_name"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Customer
+																			Name</label>
+																		<div class="col-md-7">
+																			<div mass-autocomplete>
+																				<input type="text"
+																					ng-model="pmt.customer_name"
+																					mass-autocomplete-item="ccm_cust_autocomplete"
+																					name="customer_name" required
+																					autocomplete="on"
+																					ng-disabled="tender_typeCode != '2'"
+																					ng-required="tender_typeCode == '2'"
+																					class="form-control">
+																			</div>
+																			<!-- FOR ERRORS -->
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.customer_name.$dirty && frm_payment.customer_name.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="bank"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Bank</label>
+																		<div class="col-md-7">
+																			<select ng-model="pmt.check_bank"
+																				name="check_bank" required
+																				class="form-control"
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'">
+																				<option value="" disabled="" selected=""
+																					style="display:none">Please Select One
+																					if
+																					Check</option>
+																				<?php foreach ($ccm_banks as $key => $bank): ?>
+																					<option value="<?= $bank['bank_id'] ?>">
+																						<?= $bank['bankbranchname'] ?>
+																					</option>
+																				<?php endforeach; ?>
+																			</select>
+																		</div>
 																	</div>
 																</div>
 															</div>
-															<div class="row" ng-if="tender_typeCode != '12'">
-																<div class="form-group">
-																	<label for="payee"
-																		class="col-md-5 control-label text-right">Payee</label>
-																	<div class="col-md-7">
-																		<input type="text" value="<?= $payee; ?>"
-																			name="payee" required readonly
-																			class="form-control">
+														<?php else: ?>
+															<div class="col-md-6">
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_no"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Type</label>
+																		<div class="col-md-7">
+																			<select name="check_type" class="form-control"
+																				ng-model="pmt.check_type"
+																				ng-disabled="tender_typeCode != '2'"
+																				ng-required="tender_typeCode == '2'">
+																				<option>DATED CHECK</option>
+																				<option>POST DATED CHECK</option>
+																			</select>
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.check_type.$dirty && frm_payment.check_type.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
 
-																		<!-- FOR ERRORS -->
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.payee.$dirty && frm_payment.payee.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_no"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>{{
+																			tender_typeCode ==
+																			'2' ? 'Check No.' : 'Deposit Slip No.'}}</label>
+																		<div class="col-md-7">
+																			<input type="text" ng-model="pmt.check_no"
+																				id="check_no" name="check_no" required
+																				autocomplete="off"
+																				ng-disabled="tender_typeCode != '2' && tender_typeCode != '3'"
+																				ng-required="tender_typeCode == '2' && tender_typeCode == '3'"
+																				class="form-control">
+																			<!-- ng-pattern = "/^\d+$/" -->
+
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.check_no.$dirty && frm_payment.check_no.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
+
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.check_no.$dirty && frm_payment.check_no.$error.pattern">
+																					<p class="error-display">Numeric value
+																						only
+																					</p>
+																				</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_date"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Check
+																			Date</label>
+																		<div class="col-md-7">
+																			<div class="input-group">
+																				<div class="input-group-addon input-date">
+																					<strong><i
+																							class="fa fa-calendar"></i></strong>
+																				</div>
+																				<datepicker date-format="yyyy-M-dd">
+																					<input type="text" readonly
+																						ng-disabled="tender_typeCode != '2'"
+																						ng-required="tender_typeCode == '2'"
+																						placeholder="Choose a date"
+																						class="form-control"
+																						ng-model="pmt.check_date"
+																						id="check_date" name="check_date"
+																						autocomplete="off">
+																				</datepicker>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+
+																<div class="row">
+																	<div class="form-group">
+																		<label for="check_date"
+																			class="col-md-5 control-label text-right"><i
+																				class="fa fa-asterisk"></i>Due Date</label>
+																		<div class="col-md-7">
+																			<div class="input-group">
+																				<div class="input-group-addon input-date">
+																					<strong><i
+																							class="fa fa-calendar"></i></strong>
+																				</div>
+																				<datepicker date-format="yyyy-M-dd">
+																					<input type="text" readonly
+																						ng-disabled="tender_typeCode != '2' || pmt.check_type != 'POST DATED CHECK'"
+																						ng-required="tender_typeCode == '2' && pmt.check_type == 'POST DATED CHECK'"
+																						placeholder="Choose a date"
+																						class="form-control"
+																						ng-model="pmt.check_due_date"
+																						name="check_due_date"
+																						autocomplete="off">
+																				</datepicker>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+
+																<div class="row" ng-if="tender_typeCode != '12'">
+																	<div class="form-group">
+																		<label for="payee"
+																			class="col-md-5 control-label text-right">Payor</label>
+																		<div class="col-md-7">
+																			<input type="text" ng-value="tenant.trade_name"
+																				name="payor" readonly class="form-control">
+																		</div>
+																	</div>
+																</div>
+																<div class="row" ng-if="tender_typeCode != '12'">
+																	<div class="form-group">
+																		<label for="payee"
+																			class="col-md-5 control-label text-right">Payee</label>
+																		<div class="col-md-7">
+																			<input type="text" value="<?= $payee; ?>"
+																				name="payee" required readonly
+																				class="form-control">
+
+																			<!-- FOR ERRORS -->
+																			<div class="validation-Error">
+																				<span
+																					ng-show="frm_payment.payee.$dirty && frm_payment.payee.$error.required">
+																					<p class="error-display">This field is
+																						required.</p>
+																				</span>
+																			</div>
 																		</div>
 																	</div>
 																</div>
 															</div>
 														<?php endif; ?>
-													</div> <!-- col-md-6 divider -->
-
-
-													<?php if ($this->session->userdata('cfs_logged_in')): ?>
-														<div class="col-md-6">
-
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_no"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Type</label>
-																	<div class="col-md-7">
-																		<select name="check_type" class="form-control"
-																			ng-model="pmt.check_type"
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'">
-																			<option>DATED CHECK</option>
-																			<option>POST DATED CHECK</option>
-																		</select>
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.check_type.$dirty && frm_payment.check_type.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="account_no"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Account
-																		Number</label>
-																	<div class="col-md-7">
-																		<input type="text" ng-model="account_no"
-																			id="account_no" name="account_no" required
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'"
-																			class="form-control">
-																		<!-- FOR ERRORS -->
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.account_no.$dirty && frm_payment.account_no.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="account_name"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Account Name</label>
-																	<div class="col-md-7">
-																		<input type="text" ng-model="account_name"
-																			id="account_name" name="account_name" required
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'"
-																			class="form-control">
-																		<!-- FOR ERRORS -->
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.account_name.$dirty && frm_payment.account_name.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_no"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Number</label>
-																	<div class="col-md-7">
-																		<input type="text" ng-model="pmt.check_no"
-																			id="check_no" name="check_no" required
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'"
-																			class="form-control">
-																		<!-- FOR ERRORS -->
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.check_no.$dirty && frm_payment.check_no.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_date"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Date</label>
-																	<div class="col-md-7">
-																		<div class="input-group">
-																			<div class="input-group-addon input-date">
-																				<strong><i
-																						class="fa fa-calendar"></i></strong>
-																			</div>
-																			<datepicker date-format="yyyy-M-dd">
-																				<input type="text" required readonly
-																					ng-disabled="tender_typeCode != '2'"
-																					ng-required="tender_typeCode == '2'"
-																					placeholder="Choose a date"
-																					class="form-control"
-																					ng-model="pmt.check_date"
-																					id="check_date" name="check_date"
-																					autocomplete="off">
-																			</datepicker>
-																		</div>
-																	</div>
-																</div>
-															</div>
-
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_date"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Due Date</label>
-																	<div class="col-md-7">
-																		<div class="input-group">
-																			<div class="input-group-addon input-date">
-																				<strong><i
-																						class="fa fa-calendar"></i></strong>
-																			</div>
-																			<datepicker date-format="yyyy-M-dd">
-																				<input type="text" readonly
-																					ng-disabled="tender_typeCode != '2' || pmt.check_type != 'POST DATED CHECK'"
-																					ng-required="tender_typeCode == '2' && pmt.check_type == 'POST DATED CHECK'"
-																					placeholder="Choose a date"
-																					class="form-control"
-																					ng-model="pmt.check_due_date"
-																					name="check_due_date"
-																					autocomplete="off">
-																			</datepicker>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="expiry_date"
-																		class="col-md-5 control-label text-right">
-																		<!-- <i class="fa fa-asterisk"></i> -->Expiry Date
-																	</label>
-																	<div class="col-md-7">
-																		<div class="input-group">
-																			<div class="input-group-addon input-date">
-																				<strong><i
-																						class="fa fa-calendar"></i></strong>
-																			</div>
-																			<datepicker date-format="yyyy-M-dd">
-																				<input type="text" readonly
-																					ng-disabled="tender_typeCode != '2'"
-																					placeholder="Choose a date"
-																					class="form-control"
-																					ng-model="expiry_date" id="expiry_date"
-																					name="expiry_date" autocomplete="off">
-																			</datepicker>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="bank"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Class</label>
-																	<div class="col-md-7">
-																		<select id="check_class" ng-model="check_class"
-																			name="check_class" required class="form-control"
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'">
-																			<option value="" disabled="" selected=""
-																				style="display:none">Please Select One if
-																				Check</option>
-																			<option>COMPANY</option>
-																			<option>GOVERNMENT</option>
-																			<option>PERSONAL</option>
-																			<option>SUPPLIER</option>
-																		</select>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="bank"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check
-																		Category</label>
-																	<div class="col-md-7">
-																		<select id="check_category"
-																			ng-model="check_category" name="check_category"
-																			class="form-control" required
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'">
-																			<option value="" disabled="" selected=""
-																				style="display:none">Please Select One if
-																				Check</option>
-																			<option>LOCAL</option>
-																			<option>MANILA</option>
-																			<option>NATIONAL</option>
-																			<option>REGIONAL</option>
-																		</select>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="customer_name"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Customer Name</label>
-																	<div class="col-md-7">
-																		<div mass-autocomplete>
-																			<input type="text" ng-model="pmt.customer_name"
-																				mass-autocomplete-item="ccm_cust_autocomplete"
-																				name="customer_name" required
-																				autocomplete="on"
-																				ng-disabled="tender_typeCode != '2'"
-																				ng-required="tender_typeCode == '2'"
-																				class="form-control">
-																		</div>
-																		<!-- FOR ERRORS -->
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.customer_name.$dirty && frm_payment.customer_name.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="bank"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Bank</label>
-																	<div class="col-md-7">
-																		<select ng-model="pmt.check_bank" name="check_bank"
-																			required class="form-control"
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'">
-																			<option value="" disabled="" selected=""
-																				style="display:none">Please Select One if
-																				Check</option>
-																			<?php foreach ($ccm_banks as $key => $bank): ?>
-																				<option value="<?= $bank['bank_id'] ?>">
-																					<?= $bank['bankbranchname'] ?>
-																				</option>
-																			<?php endforeach; ?>
-																		</select>
-																	</div>
-																</div>
-															</div>
-														</div>
-													<?php else: ?>
-														<div class="col-md-6">
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_no"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Type</label>
-																	<div class="col-md-7">
-																		<select name="check_type" class="form-control"
-																			ng-model="pmt.check_type"
-																			ng-disabled="tender_typeCode != '2'"
-																			ng-required="tender_typeCode == '2'">
-																			<option>DATED CHECK</option>
-																			<option>POST DATED CHECK</option>
-																		</select>
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.check_type.$dirty && frm_payment.check_type.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_no"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>{{ tender_typeCode ==
-																		'2' ? 'Check No.' : 'Deposit Slip No.'}}</label>
-																	<div class="col-md-7">
-																		<input type="text" ng-model="pmt.check_no"
-																			id="check_no" name="check_no" required
-																			autocomplete="off"
-																			ng-disabled="tender_typeCode != '2' && tender_typeCode != '3'"
-																			ng-required="tender_typeCode == '2' && tender_typeCode == '3'"
-																			class="form-control">
-																		<!-- ng-pattern = "/^\d+$/" -->
-
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.check_no.$dirty && frm_payment.check_no.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.check_no.$dirty && frm_payment.check_no.$error.pattern">
-																				<p class="error-display">Numeric value only
-																				</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_date"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Check Date</label>
-																	<div class="col-md-7">
-																		<div class="input-group">
-																			<div class="input-group-addon input-date">
-																				<strong><i
-																						class="fa fa-calendar"></i></strong>
-																			</div>
-																			<datepicker date-format="yyyy-M-dd">
-																				<input type="text" readonly
-																					ng-disabled="tender_typeCode != '2'"
-																					ng-required="tender_typeCode == '2'"
-																					placeholder="Choose a date"
-																					class="form-control"
-																					ng-model="pmt.check_date"
-																					id="check_date" name="check_date"
-																					autocomplete="off">
-																			</datepicker>
-																		</div>
-																	</div>
-																</div>
-															</div>
-
-															<div class="row">
-																<div class="form-group">
-																	<label for="check_date"
-																		class="col-md-5 control-label text-right"><i
-																			class="fa fa-asterisk"></i>Due Date</label>
-																	<div class="col-md-7">
-																		<div class="input-group">
-																			<div class="input-group-addon input-date">
-																				<strong><i
-																						class="fa fa-calendar"></i></strong>
-																			</div>
-																			<datepicker date-format="yyyy-M-dd">
-																				<input type="text" readonly
-																					ng-disabled="tender_typeCode != '2' || pmt.check_type != 'POST DATED CHECK'"
-																					ng-required="tender_typeCode == '2' && pmt.check_type == 'POST DATED CHECK'"
-																					placeholder="Choose a date"
-																					class="form-control"
-																					ng-model="pmt.check_due_date"
-																					name="check_due_date"
-																					autocomplete="off">
-																			</datepicker>
-																		</div>
-																	</div>
-																</div>
-															</div>
-
-															<div class="row" ng-if="tender_typeCode != '12'">
-																<div class="form-group">
-																	<label for="payee"
-																		class="col-md-5 control-label text-right">Payor</label>
-																	<div class="col-md-7">
-																		<input type="text" ng-value="tenant.trade_name"
-																			name="payor" readonly class="form-control">
-																	</div>
-																</div>
-															</div>
-															<div class="row" ng-if="tender_typeCode != '12'">
-																<div class="form-group">
-																	<label for="payee"
-																		class="col-md-5 control-label text-right">Payee</label>
-																	<div class="col-md-7">
-																		<input type="text" value="<?= $payee; ?>"
-																			name="payee" required readonly
-																			class="form-control">
-
-																		<!-- FOR ERRORS -->
-																		<div class="validation-Error">
-																			<span
-																				ng-show="frm_payment.payee.$dirty && frm_payment.payee.$error.required">
-																				<p class="error-display">This field is
-																					required.</p>
-																			</span>
-																		</div>
-																	</div>
-																</div>
-															</div>
-														</div>
-													<?php endif; ?>
+													</div>
 												</div>
 											</div>
 										</div>
-									</div>
-									<div class="row">
-										<div class="col-md-12">
-											<button role="submit"
-												ng-disabled="frm_payment.$invalid || totalPayable() == 0 || pmt.amount_paid == 0 || !pmt.amount_paid "
-												class="btn btn-large btn-primary col-md-1 col-md-offset-10 button-b"
-												type="submit">
-												<i class="fa fa-save"></i> Submit
-											</button>
+										<div class="row">
+											<div class="col-md-12">
+												<button role="submit"
+													ng-disabled="frm_payment.$invalid || totalPayable() == 0 || pmt.amount_paid == 0 || !pmt.amount_paid "
+													class="btn btn-large btn-primary col-md-1 col-md-offset-10 button-b"
+													type="submit">
+													<i class="fa fa-save"></i> Submit
+												</button>
+											</div>
 										</div>
 									</div>
-								</div>
 							</form>
 						</div> <!-- End of tab-content -->
 					</div>
