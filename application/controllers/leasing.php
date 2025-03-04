@@ -253,11 +253,7 @@ class Leasing extends CI_Controller
         $gl_refNo = $this->app_model->gl_refNo(false, false);
 
         // if (!$this->DISABLE_PENALTY) {
-<<<<<<< HEAD
-        if (!$this->DISABLE_PENALTY && $due_date > '2025-02-10') {  // gwaps
-=======
         if (!$this->DISABLE_PENALTY && $due_date > '2025-01-25') { // gwaps
->>>>>>> local
             $this->generateLatePaymentPenalty($tenant_id, $posting_date, $due_date);
         }
 
@@ -1175,14 +1171,6 @@ class Leasing extends CI_Controller
                             foreach ($pen_inv as $key => $inv) {
                                 $inv = (object) $inv;
 
-<<<<<<< HEAD
-                                // if ($inv->posting_date < '2025-01-01') { // added by gwaps
-                                //     continue;
-                                // } 
-                                if ($inv->due_date < '2025-02-11') {                
-                                    continue;
-                                }                                                   // ends
-=======
 
                                 // added by gwaps
                                 // if ($inv->posting_date < '2025-01-01') { 
@@ -1191,7 +1179,6 @@ class Leasing extends CI_Controller
                                 if ($inv->due_date < '2025-01-31') {
                                     continue;
                                 } // ends
->>>>>>> local
 
                                 $penaltyble = $inv->balance - $inv->nopenalty_amount;
                                 $total_penaltyble += $penaltyble > 0 ? $penaltyble : 0;
