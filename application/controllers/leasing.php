@@ -2,8 +2,10 @@
     exit('No direct script access allowed');
 }
 
-class Leasing extends CI_Controller{
-    function __construct(){
+class Leasing extends CI_Controller
+{
+    function __construct()
+    {
         parent::__construct();
         $this->load->helper(['form', 'url']);
         $this->load->library('form_validation');
@@ -41,12 +43,14 @@ class Leasing extends CI_Controller{
         //SET TO FALSE IF PANDEMIC "NO PENALTY RULE" ENDS
         $this->DISABLE_PENALTY = false;
     }
-    function sanitize($string){
+    function sanitize($string)
+    {
         $string = htmlentities($string, ENT_QUOTES, 'UTF-8');
         $string = trim($string);
         return $string;
     }
-    function password_crypt(){
+    function password_crypt()
+    {
         echo "<form action='../leasing/password_crypt' method='post'>";
         echo "<input type='text' name='password'>";
         echo "<button type='submit'>Generate</button>";
@@ -60,7 +64,8 @@ class Leasing extends CI_Controller{
             echo "<a href='../leasing/password_crypt'>CLEAR</a>";
         }
     }
-    public function invoicing(){
+    public function invoicing()
+    {
         $data = [
             'current_date' => getCurrentDate(),
             'flashdata' => $this->session->flashdata('message'),
@@ -72,7 +77,8 @@ class Leasing extends CI_Controller{
         $this->load->view('leasing/accounting/invoicing');
         $this->load->view('leasing/footer');
     }
-    public function get_tenant_details(){
+    public function get_tenant_details()
+    {
         $trade_name = $this->input->get('trade_name', true);
         $tenancy_type = $this->input->get('tenancy_type', true);
         $result = $this->app_model->select_tradeName($trade_name, $tenancy_type);
@@ -87,17 +93,19 @@ class Leasing extends CI_Controller{
 
         JSONResponse($tenant);
     }
-    public function getTransactionNo(){
-        $tenant_id  = $this->input->get('tenant_id', true);
-        $details    = $this->app_model->get_tenant_details_2($tenant_id);
-        $docno      = '';
+    public function getTransactionNo()
+    {
+        $tenant_id = $this->input->get('tenant_id', true);
+        $details = $this->app_model->get_tenant_details_2($tenant_id);
+        $docno = '';
         $tin_status = 'with';
-        $uft_no     = $this->app_model->generate_UTFTransactionNo(false, $tin_status);
-        $ip_no      = $this->app_model->generate_InternalTransactionNo(false, $tin_status);
+        $uft_no = $this->app_model->generate_UTFTransactionNo(false, $tin_status);
+        $ip_no = $this->app_model->generate_InternalTransactionNo(false, $tin_status);
 
         JSONResponse(compact('uft_no', 'ip_no'));
     }
-    public function get_document_number(){
+    public function get_document_number()
+    {
         $tenant_id = $this->uri->segment(3);
         $details = $this->app_model->get_tenant_details_2($tenant_id);
         $docno = '';
@@ -106,7 +114,8 @@ class Leasing extends CI_Controller{
 
         JSONResponse($docno);
     }
-    public function getnewsoanumber(){
+    public function getnewsoanumber()
+    {
         $tenant_id = $this->uri->segment(3);
         $details = $this->app_model->get_tenant_details_2($tenant_id);
         $docno = '';
@@ -115,7 +124,8 @@ class Leasing extends CI_Controller{
 
         JSONResponse($docno);
     }
-    public function getnewpreopdoc(){
+    public function getnewpreopdoc()
+    {
         $tenant_id = $this->uri->segment(3);
         $details = $this->app_model->get_tenant_details_2($tenant_id);
         $docno = '';
@@ -124,24 +134,28 @@ class Leasing extends CI_Controller{
 
         JSONResponse($docno);
     }
-    public function invoicing_init_data(){
+    public function invoicing_init_data()
+    {
         $preop_charges = $this->app_model->get_preopCharges();
         $cons_materials = $this->app_model->get_constMat();
 
         JSONResponse(compact('preop_charges', 'cons_materials'));
     }
-    public function selected_monthly_charges($tenant_id){
+    public function selected_monthly_charges($tenant_id)
+    {
         $tenant_id = $this->sanitize($tenant_id);
         $result = $this->app_model->selected_monthly_charges($tenant_id);
         JSONResponse($result);
     }
-    public function get_otherCharges($tenant_id){
+    public function get_otherCharges($tenant_id)
+    {
         $tenant_id = $this->sanitize($tenant_id);
         $result = $this->app_model->get_otherCharges($tenant_id);
         JSONResponse($result);
     }
     # WITH CAS FUNCTIONS
-    public function save_invoice(){
+    public function save_invoice()
+    {
         $date = new DateTime();
         $timeStamp = $date->getTimestamp();
         $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
@@ -730,7 +744,8 @@ class Leasing extends CI_Controller{
             JSONResponse(['type' => 'success', 'msg' => 'Transaction complete!',]);
         }
     }
-    function generateLatePaymentPenalty($tenant_id = '', $posting_date = '', $due_date = ''){
+    function generateLatePaymentPenalty($tenant_id = '', $posting_date = '', $due_date = '')
+    {
         $tenant_id = $this->sanitize($tenant_id);
         $posting_date = $this->sanitize($posting_date);
         $due_date = $this->sanitize($due_date);
@@ -890,7 +905,8 @@ class Leasing extends CI_Controller{
 
         return $result;
     }
-    public function soa(){
+    public function soa()
+    {
         // $data['soa_no']          = $this->app_model->get_soaNo(false);
         // $data['current_date'] = getCurrentDate();
         // $data['flashdata'] = $this->session->flashdata('message');
@@ -907,7 +923,8 @@ class Leasing extends CI_Controller{
         $this->load->view('leasing/accounting/soa');
         $this->load->view('leasing/footer');
     }
-    public function get_tenant_balances(){
+    public function get_tenant_balances()
+    {
         $tenant_id = $this->sanitize($this->input->post('tenant_id'));
         $date_created = $this->sanitize($this->input->post('date_created'));
         $date_created = date('Y-m-d', strtotime($date_created));
@@ -923,7 +940,8 @@ class Leasing extends CI_Controller{
 
         JSONResponse(['docs' => $data, 'advance' => $advance]);
     }
-    public function generate_soa(){
+    public function generate_soa()
+    {
         $tenancy_type = $this->input->post('tenancy_type');
         $trade_name = $this->input->post('trade_name');
         $contract_no = $this->input->post('contract_no');
@@ -1851,7 +1869,8 @@ class Leasing extends CI_Controller{
         ]);
     }
     #SOA PDF
-    function createSoaFile($soa, $debit){
+    function createSoaFile($soa, $debit)
+    {
         $soa = (object) $soa;
         $store = $soa->store;
         $tenant = $soa->tenant;
@@ -2502,7 +2521,8 @@ class Leasing extends CI_Controller{
 
         return $file_name;
     }
-    public function payment(){
+    public function payment()
+    {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
             $tenderTypes = json_encode([
                 ['id' => 1, 'desc' => 'Cash'],
@@ -2530,7 +2550,8 @@ class Leasing extends CI_Controller{
             $this->load->view('leasing/footer');
         }
     }
-    public function preop_transfer(){
+    public function preop_transfer()
+    {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
             $tenderTypes = json_encode([
                 ['id' => 1, 'desc' => 'Cash'],
@@ -2554,7 +2575,8 @@ class Leasing extends CI_Controller{
             $this->load->view('leasing/footer');
         }
     }
-    public function orentry(){
+    public function orentry()
+    {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
             $data['current_date'] = getCurrentDate();
 
@@ -2579,7 +2601,8 @@ class Leasing extends CI_Controller{
             $this->load->view('leasing/footer');
         }
     }
-    public function getSoaWithBalances($tenant_id, $posting_date){
+    public function getSoaWithBalances($tenant_id, $posting_date)
+    {
         $tenant_id = $this->sanitize($tenant_id);
         $posting_date = $this->sanitize($posting_date);
 
@@ -2596,13 +2619,15 @@ class Leasing extends CI_Controller{
 
         JSONResponse($soa_docs);
     }
-    public function getInvoicesBySoaNo($tenant_id, $soa_no){
-        $tenant_id  = $this->sanitize($tenant_id);
-        $soa_no     = $this->sanitize($soa_no);
-        $data       = $this->app_model->getInvoicesBySoaNo($tenant_id, $soa_no);
+    public function getInvoicesBySoaNo($tenant_id, $soa_no)
+    {
+        $tenant_id = $this->sanitize($tenant_id);
+        $soa_no = $this->sanitize($soa_no);
+        $data = $this->app_model->getInvoicesBySoaNo($tenant_id, $soa_no);
         JSONResponse($data);
     }
-    public function get_payment_initial_data(){
+    public function get_payment_initial_data()
+    {
         if ($this->session->userdata('cfs_logged_in')) {
             $store_id = $this->session->userdata('user_group');
             $banks = $this->app_model->get_mycashbank($store_id);
@@ -2624,51 +2649,52 @@ class Leasing extends CI_Controller{
 
         JSONResponse(compact('banks', 'uft_no', 'ip_no', 'stores'));
     }
-    public function save_payment(){
+    public function save_payment()
+    {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
-        $tenancy_type       = $this->sanitize($this->input->post('tenancy_type'));
-        $trade_name         = $this->sanitize($this->input->post('trade_name'));
-        $tenant_id          = $this->sanitize($this->input->post('tenant_id'));
-        $contract_no        = $this->sanitize($this->input->post('contract_no'));
-        $tenant_address     = $this->sanitize($this->input->post('tenant_address'));
-        $payment_date       = $this->sanitize($this->input->post('payment_date'));
-        $soa_no             = $this->sanitize($this->input->post('soa_no'));
-        $billing_period     = $this->sanitize($this->input->post('billing_period'));
-        $remarks            = $this->sanitize($this->input->post('remarks'));
-        $tender_typeCode    = $this->sanitize($this->input->post('tender_typeCode'));
-        $receipt_no         = $this->sanitize($this->input->post('receipt_no'));
-        $amount_paid        = $this->sanitize($this->input->post('amount_paid'));
-        $receipt_type       = $this->sanitize($this->input->post('receipt_type'));
-        $svi_no             = $this->input->post('svi_no');
-        $tender_amount      = $amount_paid;
+        $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
+        $trade_name = $this->sanitize($this->input->post('trade_name'));
+        $tenant_id = $this->sanitize($this->input->post('tenant_id'));
+        $contract_no = $this->sanitize($this->input->post('contract_no'));
+        $tenant_address = $this->sanitize($this->input->post('tenant_address'));
+        $payment_date = $this->sanitize($this->input->post('payment_date'));
+        $soa_no = $this->sanitize($this->input->post('soa_no'));
+        $billing_period = $this->sanitize($this->input->post('billing_period'));
+        $remarks = $this->sanitize($this->input->post('remarks'));
+        $tender_typeCode = $this->sanitize($this->input->post('tender_typeCode'));
+        $receipt_no = $this->sanitize($this->input->post('receipt_no'));
+        $amount_paid = $this->sanitize($this->input->post('amount_paid'));
+        $receipt_type = $this->sanitize($this->input->post('receipt_type'));
+        $svi_no = $this->input->post('svi_no');
+        $tender_amount = $amount_paid;
         // $receipt_no    = $this->app_model->generate_paymentSlipNo();
-        $payment_docs       = $this->input->post('payment_docs');
-        $transaction_date   = getCurrentDate();
-        $payment_date       = date('Y-m-d', strtotime($payment_date));
+        $payment_docs = $this->input->post('payment_docs');
+        $transaction_date = getCurrentDate();
+        $payment_date = date('Y-m-d', strtotime($payment_date));
         //IF NOT INTERNAL PAYMENT
-        $bank_code          = $this->sanitize($this->input->post('bank_code'));
-        $bank_name          = $this->sanitize($this->input->post('bank_name'));
-        $payor              = $this->sanitize($this->input->post('payor'));
-        $payee              = $this->sanitize($this->input->post('payee'));
+        $bank_code = $this->sanitize($this->input->post('bank_code'));
+        $bank_name = $this->sanitize($this->input->post('bank_name'));
+        $payor = $this->sanitize($this->input->post('payor'));
+        $payee = $this->sanitize($this->input->post('payee'));
         //IF INTERNAL PAYMENT
-        $ip_store_code      = $this->sanitize($this->input->post('store_code'));
-        $ip_store_name      = $this->sanitize($this->input->post('store_name'));
+        $ip_store_code = $this->sanitize($this->input->post('store_code'));
+        $ip_store_name = $this->sanitize($this->input->post('store_name'));
         //IF CHECK
-        $check_type         = $this->sanitize($this->input->post('check_type'));
-        $bank_code          = $this->sanitize($this->input->post('bank_code'));
-        $account_no         = $this->sanitize($this->input->post('account_no'));
-        $account_name       = $this->sanitize($this->input->post('account_name'));
-        $check_no           = $this->sanitize($this->input->post('check_no'));
-        $check_date         = $this->sanitize($this->input->post('check_date'));
-        $check_due_date     = $this->sanitize($this->input->post('check_due_date'));
-        $expiry_date        = $this->sanitize($this->input->post('expiry_date'));
-        $check_class        = $this->sanitize($this->input->post('check_class'));
-        $check_category     = $this->sanitize($this->input->post('check_category'));
-        $customer_name      = $this->sanitize($this->input->post('customer_name'));
-        $check_bank         = $this->sanitize($this->input->post('check_bank'));
-        $check_date         = date('Y-m-d', strtotime($check_date));
-        $check_due_date     = date('Y-m-d', strtotime($check_due_date));
-        $expiry_date        = date('Y-m-d', strtotime($expiry_date));
+        $check_type = $this->sanitize($this->input->post('check_type'));
+        $bank_code = $this->sanitize($this->input->post('bank_code'));
+        $account_no = $this->sanitize($this->input->post('account_no'));
+        $account_name = $this->sanitize($this->input->post('account_name'));
+        $check_no = $this->sanitize($this->input->post('check_no'));
+        $check_date = $this->sanitize($this->input->post('check_date'));
+        $check_due_date = $this->sanitize($this->input->post('check_due_date'));
+        $expiry_date = $this->sanitize($this->input->post('expiry_date'));
+        $check_class = $this->sanitize($this->input->post('check_class'));
+        $check_category = $this->sanitize($this->input->post('check_category'));
+        $customer_name = $this->sanitize($this->input->post('customer_name'));
+        $check_bank = $this->sanitize($this->input->post('check_bank'));
+        $check_date = date('Y-m-d', strtotime($check_date));
+        $check_due_date = date('Y-m-d', strtotime($check_due_date));
+        $expiry_date = date('Y-m-d', strtotime($expiry_date));
         /*=====================  SETTING VALUES ENDS HERE ==========================*/
 
         /*=====================  VALIDATION STARTS HERE ==========================*/
@@ -2686,20 +2712,20 @@ class Leasing extends CI_Controller{
         $this->form_validation->set_rules('payment_docs', 'Payment Documents', 'required');
         $this->form_validation->set_rules('svi_no', 'SVI No.', 'required');
 
-        if (in_array($tender_typeCode, [1, 2, 3, 11])){
+        if (in_array($tender_typeCode, [1, 2, 3, 11])) {
             $this->form_validation->set_rules('bank_code', 'Bank Code', 'required');
             $this->form_validation->set_rules('bank_name', 'Bank Name', 'required');
             $this->form_validation->set_rules('payor', 'Payor', 'required');
             $this->form_validation->set_rules('payee', 'Payee', 'required');
-        } else{
-            if ($tender_typeCode == 12){
+        } else {
+            if ($tender_typeCode == 12) {
                 $this->form_validation->set_rules('store_code', 'Store Code', 'required');
                 $this->form_validation->set_rules('store_name', 'Store Name', 'required');
             }
             $bank_code = null;
             $bank_name = null;
         }
-        if ($tender_typeCode == '2'){
+        if ($tender_typeCode == '2') {
             if ($this->session->userdata('cfs_logged_in')) {
                 $this->form_validation->set_rules('account_no', 'Account No.', 'required');
                 $this->form_validation->set_rules('account_name', 'Account Name', 'required');
@@ -2714,12 +2740,12 @@ class Leasing extends CI_Controller{
             $this->form_validation->set_rules('check_date', 'Check Date', 'required');
 
             if (!in_array($check_type, ['DATED CHECK', 'POST DATED CHECK'])) {
-                JSONResponse(['type'  => 'error', 'msg'   => 'Invalid Check Type!']);
+                JSONResponse(['type' => 'error', 'msg' => 'Invalid Check Type!']);
             }
             if ($check_type == 'POST DATED CHECK') {
                 $this->form_validation->set_rules('check_due_date', 'Check Due Date', 'required');
                 if (!validDate($check_due_date)) {
-                    JSONResponse(['type'  => 'error', 'msg'   => 'Check Due Date is not valid!']);
+                    JSONResponse(['type' => 'error', 'msg' => 'Check Due Date is not valid!']);
                 }
             }
             if ($this->session->userdata('cfs_logged_in') && !validDate($expiry_date)) {
@@ -2727,7 +2753,7 @@ class Leasing extends CI_Controller{
                 //JSONResponse(['type'=>'error', 'msg'=>'Check Expiry Date is not valid!']);
             }
             if (!validDate($check_date)) {
-                JSONResponse(['type'  => 'error', 'msg'   => 'Check Date is not valid!']);
+                JSONResponse(['type' => 'error', 'msg' => 'Check Date is not valid!']);
             }
         }
 
@@ -2742,14 +2768,14 @@ class Leasing extends CI_Controller{
         }
 
         $tender_types = [
-            '1'     => 'Cash',
-            '2'     => 'Check',
-            '3'     => 'Bank to Bank',
-            '4'     => 'AR-Employee',
-            '11'    => 'Unidentified Fund Transfer',
-            '12'    => 'Internal Payment',
-            '80'    => 'JV payment - Business Unit',
-            '81'    => 'JV payment - Subsidiary',
+            '1' => 'Cash',
+            '2' => 'Check',
+            '3' => 'Bank to Bank',
+            '4' => 'AR-Employee',
+            '11' => 'Unidentified Fund Transfer',
+            '12' => 'Internal Payment',
+            '80' => 'JV payment - Business Unit',
+            '81' => 'JV payment - Subsidiary',
         ];
 
         $tender_typeDesc = $tender_types[$tender_typeCode];
@@ -2804,9 +2830,9 @@ class Leasing extends CI_Controller{
         $tenant = $this->app_model->getTenantByTenantID($tenant_id);
 
         try {
-            $store_code             = $this->app_model->tenant_storeCode($tenant_id);
-            $store                  = $this->app_model->getStore($store_code);
-            $soa_display['store']   = $store;
+            $store_code = $this->app_model->tenant_storeCode($tenant_id);
+            $store = $this->app_model->getStore($store_code);
+            $soa_display['store'] = $store;
 
             if (empty($store_code) || empty($store) || empty($tenant)) {
                 throw new Exception('Invalid Tenant');
@@ -2817,10 +2843,10 @@ class Leasing extends CI_Controller{
 
         /*=====================  VALIDATION ENDS HERE ==========================*/
 
-        $details    = $this->app_model->get_tenant_details_2($tenant_id);
-        $docno      = '';
+        $details = $this->app_model->get_tenant_details_2($tenant_id);
+        $docno = '';
         $tin_status = 'with';
-        $tinStatus  = ['ON PROCESS', 'NO TIN', '', null, '000-000-000', '000-000-000-000'];
+        $tinStatus = ['ON PROCESS', 'NO TIN', '', null, '000-000-000', '000-000-000-000'];
 
         //SET UFT OR IP PAYMENT DOC. NO.
         switch ($tender_typeCode) {
@@ -2851,13 +2877,14 @@ class Leasing extends CI_Controller{
         //APPLY PAYMENT TO INVOICES
         foreach ($payment_docs as $key => $doc) {
             $doc = (object) $doc;
+            $svi_value = isset($svi_no[$doc->doc_no]) ? $svi_no[$doc->doc_no] : ''; // added by gwaps
 
             if ($amount_paid <= 0) {
                 break;
             }
 
-            $doc_payment_amt    = round($amount_paid > $doc->balance ? $doc->balance : $amount_paid, 2);
-            $amount_paid        = round($amount_paid - $doc_payment_amt, 2);
+            $doc_payment_amt = round($amount_paid > $doc->balance ? $doc->balance : $amount_paid, 2);
+            $amount_paid = round($amount_paid - $doc_payment_amt, 2);
 
             $payment_docs[$key]['amount_paid'] = $doc_payment_amt;
 
@@ -2886,156 +2913,118 @@ class Leasing extends CI_Controller{
                 $preOpTag = 'Preop';
             }
 
-            $sl_data        = [];
-            $gl_code        = '';
-            $debit_status   = null;
-            $credit_status  = null;
-            $ft_ref         = null;
-            $due_date       = null;
+            $sl_data = [];
+            $gl_code = '';
+            $debit_status = null;
+            $credit_status = null;
+            $ft_ref = null;
+            $due_date = null;
 
-            if ($tender_typeCode == 1 || $tender_typeCode == 3) {//CASH | BANK TO BANK
+            if ($tender_typeCode == 1 || $tender_typeCode == 3) { //CASH | BANK TO BANK
                 $gl_code = '10.10.01.01.02';
-            } elseif ($tender_typeCode == 2) {//CHECK
+            } elseif ($tender_typeCode == 2) { //CHECK
                 $gl_code = $check_type == 'POST DATED CHECK' ? '10.10.01.03.07.01' : '10.10.01.01.02';
                 if ($check_type == 'POST DATED CHECK') {
                     //$debit_status = 'PDC';
-                    $credit_status  = 'PDC';
-                    $ft_ref         = $this->app_model->generate_ClosingRefNo(false, $tin_status);
-                    $due_date       = $check_due_date;
+                    $credit_status = 'PDC';
+                    $ft_ref = $this->app_model->generate_ClosingRefNo(false, $tin_status);
+                    $due_date = $check_due_date;
                 }
-            } elseif ($tender_typeCode == 80) {//JV payment - Business Unit
+            } elseif ($tender_typeCode == 80) { //JV payment - Business Unit
                 $gl_code = $this->app_model->bu_entry();
-            } elseif ($tender_typeCode == 81) {//JV payment - Subsidiary
+            } elseif ($tender_typeCode == 81) { //JV payment - Subsidiary
                 $gl_code = '10.10.01.03.11';
-            } elseif ($tender_typeCode == 11) {//UFT
-                $gl_code    = '10.10.01.01.02';
-                $ft_ref     = $this->app_model->generate_ClosingRefNo(false, $tin_status);
+            } elseif ($tender_typeCode == 11) { //UFT
+                $gl_code = '10.10.01.01.02';
+                $ft_ref = $this->app_model->generate_ClosingRefNo(false, $tin_status);
                 switch ($doc->gl_accountID) {
                     case '9':
                     case '8':
                     case '7':
                         $credit_status = 'Preop Clearing';
-                    break;
+                        break;
                     case '4':
                         $credit_status = 'RR Clearing';
-                    break;
+                        break;
                     default:
                         $credit_status = 'AR Clearing';
-                    break;
+                        break;
                 }
-            } elseif ($tender_typeCode == 4) {//INTERNAL PAYMENT
+            } elseif ($tender_typeCode == 4) { //INTERNAL PAYMENT
                 //AR - EMPLOYEE
                 $gl_code = '10.10.01.03.01.03';
             } else {
-                $ft_ref         = $this->app_model->generate_ClosingRefNo(false, $tin_status);
-                $gl_code        = '10.10.01.03.04';
-                $debit_status   = $ip_store_name;
-                $credit_status  = 'ARNTI';
+                $ft_ref = $this->app_model->generate_ClosingRefNo(false, $tin_status);
+                $gl_code = '10.10.01.03.04';
+                $debit_status = $ip_store_name;
+                $credit_status = 'ARNTI';
             }
 
             $cas_doc_no = $doc->cas_doc_no;
-            // var_dump('doc',$doc);
-            // var_dump('doc->ref_no',$doc->ref_no);
 
             $sl_data['debit'] = [
-                'posting_date'      => $payment_date,
-                'due_date'          => $due_date,
-                'transaction_date'  => $transaction_date,
-                'document_type'     => 'Payment',
-                'ref_no'            => $doc->ref_no,
-                'doc_no'            => $receipt_no,
-                'svi_no'            => $svi_no,
-                'cas_doc_no'        => $cas_doc_no,
-                'tenant_id'         => $tenant_id,
-                'gl_accountID'      => $this->app_model->gl_accountID($gl_code),
-                'company_code'      => $store->company_code,
-                'department_code'   => $store->dept_code,
-                'debit'             => $doc_payment_amt,
-                'bank_name'         => $tender_typeCode != 12 ? $bank_name : null,
-                'bank_code'         => $tender_typeCode != 12 ? $bank_code : null,
-                'status'            => $debit_status,
-                'ft_ref'            => $ft_ref,
-                'prepared_by'       => $this->session->userdata('id'),
-                'tag'               => $preOpTag,
+                'posting_date' => $payment_date,
+                'due_date' => $due_date,
+                'transaction_date' => $transaction_date,
+                'document_type' => 'Payment',
+                'ref_no' => $doc->ref_no,
+                'doc_no' => $receipt_no,
+                'svi_no' => $svi_value,// added by gwaps
+                'cas_doc_no' => $cas_doc_no,
+                'tenant_id' => $tenant_id,
+                'gl_accountID' => $this->app_model->gl_accountID($gl_code),
+                'company_code' => $store->company_code,
+                'department_code' => $store->dept_code,
+                'debit' => $doc_payment_amt,
+                'bank_name' => $tender_typeCode != 12 ? $bank_name : null,
+                'bank_code' => $tender_typeCode != 12 ? $bank_code : null,
+                'status' => $debit_status,
+                'ft_ref' => $ft_ref,
+                'prepared_by' => $this->session->userdata('id'),
+                'tag' => $preOpTag,
             ];
             $sl_data['credit'] = [
-                'posting_date'      => $payment_date,
-                'due_date'          => $due_date,
-                'transaction_date'  => $transaction_date,
-                'document_type'     => 'Payment',
-                'ref_no'            => $doc->ref_no,
-                'doc_no'            => $receipt_no,
-                'svi_no'            => $svi_no,
-                'cas_doc_no'        => $cas_doc_no,
-                'tenant_id'         => $tenant_id,
-                'gl_accountID'      => $doc->gl_accountID,
-                'company_code'      => $store->company_code,
-                'department_code'   => $store->dept_code,
-                'credit'            => -1 * $doc_payment_amt,
-                'bank_name'         => $tender_typeCode != 12 ? $bank_name : null,
-                'bank_code'         => $tender_typeCode != 12 ? $bank_code : null,
-                'status'            => $credit_status,
-                'ft_ref'            => $ft_ref,
-                'prepared_by'       => $this->session->userdata('id'),
-                'tag'               => $preOpTag,
+                'posting_date' => $payment_date,
+                'due_date' => $due_date,
+                'transaction_date' => $transaction_date,
+                'document_type' => 'Payment',
+                'ref_no' => $doc->ref_no,
+                'doc_no' => $receipt_no,
+                'svi_no' => $svi_value,// added by gwaps
+                'cas_doc_no' => $cas_doc_no,
+                'tenant_id' => $tenant_id,
+                'gl_accountID' => $doc->gl_accountID,
+                'company_code' => $store->company_code,
+                'department_code' => $store->dept_code,
+                'credit' => -1 * $doc_payment_amt,
+                'bank_name' => $tender_typeCode != 12 ? $bank_name : null,
+                'bank_code' => $tender_typeCode != 12 ? $bank_code : null,
+                'status' => $credit_status,
+                'ft_ref' => $ft_ref,
+                'prepared_by' => $this->session->userdata('id'),
+                'tag' => $preOpTag,
             ];
 
-            // foreach ($sl_data as $key => $data) {//original
-            //     // $this->db->insert('general_ledger', $data);
-            //     // echo $this->db->_error_message();
-            //     // $this->db->insert('subsidiary_ledger', $data);
-            //     // echo $this->db->_error_message();
-            // }
-
-            // foreach ($sl_data as $key => $data) {
-            //     // var_dump('aaaaaaaaaaaaa',$data['svi_no']);
-            //     foreach ($data['svi_no'] as $svi) {
-            //         // var_dump('bbbbbbbbbbbbbbbb',$svi);
-            //         $data_copy = $data; // Copy data to avoid modification
-            //         $data_copy['svi_no'] = trim($svi); // Assign single SVI No.
-            //         // var_dump('ccccccccccccccccc',$data_copy['svi_no']);
-
-            //         echo "<pre>";
-            //         print_r($data_copy); // Debugging output
-            //         echo "</pre>";
-            //     }
-            // }
-
-            // foreach ($sl_data as $key => $data) {
-            //     $svi_no_array   = explode(',', $data['svi_no']); // Convert svi_no to array
-            //     $data['svi_no'] = trim($svi_no_array[0]); // Keep only the first SVI number
-
-            //     echo "<pre>";
-            //         print_r($data['svi_no']); // Debugging output
-            //     echo "</pre>";
-            // }
-
-            foreach ($sl_data as $key => $data) {
-                // foreach ($data['svi_no'] as $svi) {
-                //     $data_copy              = $data;
-                //     $data_copy['svi_no']    = trim($svi);
-                // }
-                $sl_data[$key]['svi_no'] = implode(', ', array_map('trim', $data['svi_no']));
-
-                echo "<pre>";
-                    print_r($sl_data[$key]['svi_no'] );
-                echo "</pre>";
+            foreach ($sl_data as $key => $data) { //original
+                $this->db->insert('general_ledger', $data);
+                // echo $this->db->_error_message();
+                $this->db->insert('subsidiary_ledger', $data);
+                // echo $this->db->_error_message();
             }
-            die();
 
             if ($doc->document_type != 'Preop-Charges') {
                 $inv = $this->app_model->getLedgerFirstResultByDocNo($tenant_id, $doc->doc_no);
                 if (!empty($inv)) {
                     $ledger_data = [
-                        'posting_date'  => $payment_date,
+                        'posting_date' => $payment_date,
                         'document_type' => 'Payment',
-                        'ref_no'        => $inv->ref_no,
-                        'doc_no'        => $receipt_no,
-                        'tenant_id'     => $tenant_id,
-                        'contract_no'   => $contract_no,
-                        'description'   => $inv->description,
-                        'debit'         => $doc_payment_amt,
-                        'balance'       => 0,
+                        'ref_no' => $inv->ref_no,
+                        'doc_no' => $receipt_no,
+                        'tenant_id' => $tenant_id,
+                        'contract_no' => $contract_no,
+                        'description' => $inv->description,
+                        'debit' => $doc_payment_amt,
+                        'balance' => 0,
                     ];
                     $this->app_model->insert('ledger', $ledger_data);
                 }
@@ -3071,74 +3060,74 @@ class Leasing extends CI_Controller{
         //INSERT URI IF HAS ADVANCE
         $advance_amount = $amount_paid;
         if ($advance_amount > 0) {
-            $sl_data        = [];
-            $gl_code        = '';
-            $ft_ref         = null;
-            $debit_status   = null;
-            $credit_status  = null;
-            $uri_ref_no     = $this->app_model->gl_refNo(false, false);
-            $due_date       = null;
+            $sl_data = [];
+            $gl_code = '';
+            $ft_ref = null;
+            $debit_status = null;
+            $credit_status = null;
+            $uri_ref_no = $this->app_model->gl_refNo(false, false);
+            $due_date = null;
 
-            if ($tender_typeCode == 1 || $tender_typeCode == 3) {//CASH | BANK TO BANK
+            if ($tender_typeCode == 1 || $tender_typeCode == 3) { //CASH | BANK TO BANK
                 $gl_code = '10.10.01.01.02';
-            } elseif ($tender_typeCode == 2) {//CHECK
+            } elseif ($tender_typeCode == 2) { //CHECK
                 $gl_code = $check_type == 'POST DATED CHECK' ? '10.10.01.03.07.01' : '10.10.01.01.02';
                 if ($check_type == 'POST DATED CHECK') {
                     //$debit_status = 'PDC';
-                    $credit_status  = 'PDC';
-                    $ft_ref         = $this->app_model->generate_ClosingRefNo(false, $tin_status);
-                    $due_date       = $check_due_date;
+                    $credit_status = 'PDC';
+                    $ft_ref = $this->app_model->generate_ClosingRefNo(false, $tin_status);
+                    $due_date = $check_due_date;
                 }
-            } elseif ($tender_typeCode == 80) {//JV payment - Business Unit
+            } elseif ($tender_typeCode == 80) { //JV payment - Business Unit
                 $gl_code = $this->app_model->bu_entry();
-            } elseif ($tender_typeCode == 81) {//JV payment - Subsidiary
+            } elseif ($tender_typeCode == 81) { //JV payment - Subsidiary
                 $gl_code = '10.10.01.03.11';
-            } elseif ($tender_typeCode == 11) {//UFT
-                $gl_code        = '10.10.01.01.02';
-                $credit_status  = 'URI Clearing';
-                $ft_ref         = $this->app_model->generate_ClosingRefNo(false, $tin_status);
-            } else {//INTERNAL PAYMENT
-                $gl_code        = '10.10.01.03.04';
-                $debit_status   = $ip_store_name;
-                $credit_status  = 'ARNTI';
-                $ft_ref         = $this->app_model->generate_ClosingRefNo(false, $tin_status);
+            } elseif ($tender_typeCode == 11) { //UFT
+                $gl_code = '10.10.01.01.02';
+                $credit_status = 'URI Clearing';
+                $ft_ref = $this->app_model->generate_ClosingRefNo(false, $tin_status);
+            } else { //INTERNAL PAYMENT
+                $gl_code = '10.10.01.03.04';
+                $debit_status = $ip_store_name;
+                $credit_status = 'ARNTI';
+                $ft_ref = $this->app_model->generate_ClosingRefNo(false, $tin_status);
             }
 
             $sl_data['debit'] = [
-                'posting_date'      => $payment_date,
-                'due_date'          => $due_date,
-                'transaction_date'  => $transaction_date,
-                'document_type'     => 'Payment',
-                'ref_no'            => $uri_ref_no,
-                'doc_no'            => $receipt_no,
-                'tenant_id'         => $tenant_id,
-                'gl_accountID'      => $this->app_model->gl_accountID($gl_code),
-                'company_code'      => $store->company_code,
-                'department_code'   => $store->dept_code,
-                'debit'             => $advance_amount,
-                'bank_name'         => $tender_typeCode != 12 ? $bank_name : null,
-                'bank_code'         => $tender_typeCode != 12 ? $bank_code : null,
-                'status'            => $debit_status,
-                'ft_ref'            => $ft_ref,
-                'prepared_by'       => $this->session->userdata('id'),
+                'posting_date' => $payment_date,
+                'due_date' => $due_date,
+                'transaction_date' => $transaction_date,
+                'document_type' => 'Payment',
+                'ref_no' => $uri_ref_no,
+                'doc_no' => $receipt_no,
+                'tenant_id' => $tenant_id,
+                'gl_accountID' => $this->app_model->gl_accountID($gl_code),
+                'company_code' => $store->company_code,
+                'department_code' => $store->dept_code,
+                'debit' => $advance_amount,
+                'bank_name' => $tender_typeCode != 12 ? $bank_name : null,
+                'bank_code' => $tender_typeCode != 12 ? $bank_code : null,
+                'status' => $debit_status,
+                'ft_ref' => $ft_ref,
+                'prepared_by' => $this->session->userdata('id'),
             ];
             $sl_data['credit'] = [
-                'posting_date'      => $payment_date,
-                'due_date'          => $due_date,
-                'transaction_date'  => $transaction_date,
-                'document_type'     => 'Payment',
-                'ref_no'            => $uri_ref_no,
-                'doc_no'            => $receipt_no,
-                'tenant_id'         => $tenant_id,
-                'gl_accountID'      => $this->app_model->gl_accountID('10.20.01.01.02.01'),
-                'company_code'      => $store->company_code,
-                'department_code'   => $store->dept_code,
-                'credit'            => -1 * $advance_amount,
-                'bank_name'         => $tender_typeCode != 12 ? $bank_name : null,
-                'bank_code'         => $tender_typeCode != 12 ? $bank_code : null,
-                'status'            => $credit_status,
-                'ft_ref'            => $ft_ref,
-                'prepared_by'       => $this->session->userdata('id'),
+                'posting_date' => $payment_date,
+                'due_date' => $due_date,
+                'transaction_date' => $transaction_date,
+                'document_type' => 'Payment',
+                'ref_no' => $uri_ref_no,
+                'doc_no' => $receipt_no,
+                'tenant_id' => $tenant_id,
+                'gl_accountID' => $this->app_model->gl_accountID('10.20.01.01.02.01'),
+                'company_code' => $store->company_code,
+                'department_code' => $store->dept_code,
+                'credit' => -1 * $advance_amount,
+                'bank_name' => $tender_typeCode != 12 ? $bank_name : null,
+                'bank_code' => $tender_typeCode != 12 ? $bank_code : null,
+                'status' => $credit_status,
+                'ft_ref' => $ft_ref,
+                'prepared_by' => $this->session->userdata('id'),
             ];
 
             foreach ($sl_data as $key => $data) {
@@ -3150,33 +3139,33 @@ class Leasing extends CI_Controller{
 
             // For Montly Receivable Report
             $mon_rec_report_data = [
-                'tenant_id'     => $tenant_id,
-                'doc_no'        => $receipt_no,
-                'posting_date'  => $payment_date,
-                'description'   => 'Advance Payment',
-                'amount'        => $advance_amount,
+                'tenant_id' => $tenant_id,
+                'doc_no' => $receipt_no,
+                'posting_date' => $payment_date,
+                'description' => 'Advance Payment',
+                'amount' => $advance_amount,
             ];
 
             $this->app_model->insert('monthly_receivable_report', $mon_rec_report_data);
 
             $ledger_data = [
-                'posting_date'      => $payment_date,
-                'transaction_date'  => $transaction_date,
-                'document_type'     => 'Advance Payment',
-                'doc_no'            => $receipt_no,
-                'ref_no'            => $this->app_model->generate_refNo(false, false),
-                'tenant_id'         => $tenant_id,
-                'contract_no'       => $contract_no,
-                'description'       => 'Advance Payment-' . $trade_name,
-                'debit'             => $advance_amount,
-                'credit'            => 0,
-                'balance'           => $advance_amount,
+                'posting_date' => $payment_date,
+                'transaction_date' => $transaction_date,
+                'document_type' => 'Advance Payment',
+                'doc_no' => $receipt_no,
+                'ref_no' => $this->app_model->generate_refNo(false, false),
+                'tenant_id' => $tenant_id,
+                'contract_no' => $contract_no,
+                'description' => 'Advance Payment-' . $trade_name,
+                'debit' => $advance_amount,
+                'credit' => 0,
+                'balance' => $advance_amount,
             ];
 
             $this->app_model->insert('ledger', $ledger_data);
 
             // For Accountability Report
-            if (in_array($tender_typeCode, ['1', '2', '3', '80', '81']) && $this->session->userdata('cfs_logged_in')){
+            if (in_array($tender_typeCode, ['1', '2', '3', '80', '81']) && $this->session->userdata('cfs_logged_in')) {
                 $this->app_model->insert_accReport(
                     $tenant_id,
                     'Advance Deposit',
@@ -3197,9 +3186,9 @@ class Leasing extends CI_Controller{
                 move_uploaded_file($supp['tmp_name'], $targetPath . $filename);
 
                 $supp_doc_data = [
-                    'tenant_id'     => $tenant_id,
-                    'file_name'     => $filename,
-                    'receipt_no'    => $receipt_no,
+                    'tenant_id' => $tenant_id,
+                    'file_name' => $filename,
+                    'receipt_no' => $receipt_no,
                 ];
 
                 $this->db->insert('payment_supportingdocs', $supp_doc_data);
@@ -3243,52 +3232,52 @@ class Leasing extends CI_Controller{
             : null);*/
 
             $paymentScheme = [
-                'tenant_id'         => $tenant_id,
-                'contract_no'       => $contract_no,
-                'tenancy_type'      => $tenancy_type,
-                'receipt_no'        => $receipt_no,
-                'tender_typeCode'   => $tender_typeCode,
-                'tender_typeDesc'   => $tender_typeDesc,
-                'soa_no'            => $soa_no,
-                'billing_period'    => $billing_period,
-                'amount_due'        => $total_payable,
-                'amount_paid'       => $tender_amount,
-                'bank'              => $bank_name,
-                'check_no'          => $tender_typeCode == 2 || $tender_typeCode == 3 ? $check_no : null,
-                'check_date'        => $check_date,
-                'payor'             => $payor,
-                'payee'             => $payee,
-                'receipt_doc'       => $payment_report,
-                'rec_amount_paid'   => $tender_amount,
-                'status'            => 'NO OR',
+                'tenant_id' => $tenant_id,
+                'contract_no' => $contract_no,
+                'tenancy_type' => $tenancy_type,
+                'receipt_no' => $receipt_no,
+                'tender_typeCode' => $tender_typeCode,
+                'tender_typeDesc' => $tender_typeDesc,
+                'soa_no' => $soa_no,
+                'billing_period' => $billing_period,
+                'amount_due' => $total_payable,
+                'amount_paid' => $tender_amount,
+                'bank' => $bank_name,
+                'check_no' => $tender_typeCode == 2 || $tender_typeCode == 3 ? $check_no : null,
+                'check_date' => $check_date,
+                'payor' => $payor,
+                'payee' => $payee,
+                'receipt_doc' => $payment_report,
+                'rec_amount_paid' => $tender_amount,
+                'status' => 'NO OR',
             ];
             $this->db->insert('payment_scheme', $paymentScheme);
 
             /*======================  CCM DATA =================================== */
             if ($tender_typeCode == '2' && $this->session->userdata('cfs_logged_in')) {
                 $this->load->model('ccm_model');
-                $customer_id                    = $this->ccm_model->check_customer($customer_name);
-                $checksreceivingtransaction_id  = $this->ccm_model->checksreceivingtransaction();
+                $customer_id = $this->ccm_model->check_customer($customer_name);
+                $checksreceivingtransaction_id = $this->ccm_model->checksreceivingtransaction();
 
                 $ccm_data = [
                     'checksreceivingtransaction_id' => $checksreceivingtransaction_id,
-                    'customer_id'                   => $customer_id,
-                    'businessunit_id'               => $this->ccm_model->get_BU(),
-                    'department_from'               => '12',
-                    'leasing_docno'                 => $receipt_no,
-                    'check_no'                      => $check_no,
-                    'check_class'                   => $check_class,
-                    'check_category'                => $check_category,
-                    'check_expiry'                  => $expiry_date,
-                    'check_date'                    => $check_date,
-                    'check_received'                => $transaction_date,
-                    'check_type'                    => $check_type,
-                    'account_no'                    => $account_no,
-                    'account_name'                  => $account_name,
-                    'bank_id'                       => $check_bank,
-                    'check_amount'                  => $tender_amount,
-                    'currency_id'                   => '1',
-                    'check_status'                  => 'PENDING',
+                    'customer_id' => $customer_id,
+                    'businessunit_id' => $this->ccm_model->get_BU(),
+                    'department_from' => '12',
+                    'leasing_docno' => $receipt_no,
+                    'check_no' => $check_no,
+                    'check_class' => $check_class,
+                    'check_category' => $check_category,
+                    'check_expiry' => $expiry_date,
+                    'check_date' => $check_date,
+                    'check_received' => $transaction_date,
+                    'check_type' => $check_type,
+                    'account_no' => $account_no,
+                    'account_name' => $account_name,
+                    'bank_id' => $check_bank,
+                    'check_amount' => $tender_amount,
+                    'currency_id' => '1',
+                    'check_status' => 'PENDING',
                 ];
                 $this->ccm_model->insert('checks', $ccm_data);
             }
@@ -3299,12 +3288,12 @@ class Leasing extends CI_Controller{
 
         //INSERT TO PAYMENT
         $paymentData = [
-            'posting_date'      => $payment_date,
-            'soa_no'            => $soa_no,
-            'amount_paid'       => $tender_amount,
-            'tenant_id'         => $tenant_id,
-            'doc_no'            => $receipt_no,
-            'rec_amount_paid'   => $tender_amount,
+            'posting_date' => $payment_date,
+            'soa_no' => $soa_no,
+            'amount_paid' => $tender_amount,
+            'tenant_id' => $tenant_id,
+            'doc_no' => $receipt_no,
+            'rec_amount_paid' => $tender_amount,
         ];
 
         $this->db->insert('payment', $paymentData);
@@ -3312,12 +3301,12 @@ class Leasing extends CI_Controller{
         //INSERT UFT
         if ($tender_typeCode == '11') {
             $data_utf = [
-                'tenant_id'         => $tenant_id,
-                'bank_code'         => $bank_code,
-                'bank_name'         => $bank_name,
-                'posting_date'      => $payment_date,
-                'amount_payable'    => $total_payable,
-                'amount_paid'       => $tender_amount,
+                'tenant_id' => $tenant_id,
+                'bank_code' => $bank_code,
+                'bank_name' => $bank_name,
+                'posting_date' => $payment_date,
+                'amount_payable' => $total_payable,
+                'amount_paid' => $tender_amount,
             ];
             $this->db->insert('uft_payment', $data_utf);
         }
@@ -3327,8 +3316,8 @@ class Leasing extends CI_Controller{
             $collection_date = $soa->collection_date;
 
             if (date('Y-m-d', strtotime($payment_date)) > date('Y-m-d', strtotime($collection_date . '+ 1 day'))) {
-                $daysOfMonth    = date('t', strtotime($payment_date));
-                $daydiff        = floor(
+                $daysOfMonth = date('t', strtotime($payment_date));
+                $daydiff = floor(
                     abs(
                         strtotime($payment_date . '- 1 days') -
                         strtotime($collection_date)
@@ -3341,12 +3330,12 @@ class Leasing extends CI_Controller{
                 $penalty_latepayment = ($tender_amount * 0.02 * $daydiff) / $daysOfMonth;
 
                 $penaltyEntry = [
-                    'tenant_id'     => $tenant_id,
-                    'posting_date'  => $payment_date,
-                    'contract_no'   => $contract_no,
-                    'doc_no'        => $receipt_no,
-                    'description'   => 'Late Payment-' . $trade_name,
-                    'amount'        => round($penalty_latepayment, 2),
+                    'tenant_id' => $tenant_id,
+                    'posting_date' => $payment_date,
+                    'contract_no' => $contract_no,
+                    'doc_no' => $receipt_no,
+                    'description' => 'Late Payment-' . $trade_name,
+                    'amount' => round($penalty_latepayment, 2),
                 ];
                 $this->db->insert('tmp_latepaymentpenalty', $penaltyEntry);
             }
@@ -3369,7 +3358,8 @@ class Leasing extends CI_Controller{
         JSONResponse(['type' => 'success', 'msg' => 'Payment successfully posted!',]);
     }
     #PAYMENT PDF
-    function createPaymentDocsFile($pmt){
+    function createPaymentDocsFile($pmt)
+    {
         // dump($pmt);
         // exit();
         $pdf = new FPDF('p', 'mm', 'A4');
@@ -3653,7 +3643,8 @@ class Leasing extends CI_Controller{
         $pdf->Output('assets/pdf/' . $file_name, 'F');
         return $file_name;
     }
-    public function preop_payment(){
+    public function preop_payment()
+    {
         $data['payment_docNo'] = $this->app_model->payment_docNo(false, 'with');
         $data['current_date'] = getCurrentDate();
 
@@ -3665,7 +3656,8 @@ class Leasing extends CI_Controller{
         $this->load->view('leasing/accounting/preop_payment');
         $this->load->view('leasing/footer');
     }
-    public function get_preop_balance($tenant_id = '', $gl_account = ''){
+    public function get_preop_balance($tenant_id = '', $gl_account = '')
+    {
         $tenant_id = str_replace('%20', ' ', $tenant_id);
         $gl_account = str_replace('%20', ' ', $gl_account);
 
@@ -3673,7 +3665,8 @@ class Leasing extends CI_Controller{
             $this->app_model->get_preop_balance($tenant_id, $gl_account)
         );
     }
-    public function getPreopPaymentInvoicesBySoaNo($tenant_id, $soa_no){
+    public function getPreopPaymentInvoicesBySoaNo($tenant_id, $soa_no)
+    {
         $tenant_id = $this->sanitize($tenant_id);
         $soa_no = $this->sanitize($soa_no);
 
@@ -3685,7 +3678,8 @@ class Leasing extends CI_Controller{
 
         JSONResponse($data);
     }
-    public function save_paymentUsingPreop(){
+    public function save_paymentUsingPreop()
+    {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
         //$receipt_no         = $this->sanitize($this->input->post('receipt_no'));
         $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
@@ -4088,7 +4082,8 @@ class Leasing extends CI_Controller{
             'file' => $payment_report,
         ]);
     }
-    public function advance_payment(){
+    public function advance_payment()
+    {
         if ($this->session->userdata('user_type') == 'Accounting Staff') {
             $current_date = getCurrentDate();
             $flashdata = $this->session->flashdata('message');
@@ -4120,7 +4115,8 @@ class Leasing extends CI_Controller{
             $this->load->view('leasing/footer');
         }
     }
-    public function save_advancePayment(){
+    public function save_advancePayment()
+    {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
         $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
         $trade_name = $this->sanitize($this->input->post('trade_name'));
@@ -4587,7 +4583,8 @@ class Leasing extends CI_Controller{
 
         JSONResponse(['type' => 'success', 'msg' => 'Payment successfully posted!',]);
     }
-    public function save_transferedPreop(){
+    public function save_transferedPreop()
+    {
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
         $preop_type = $this->sanitize($this->input->post('preop_type'));
         $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
@@ -4903,7 +4900,8 @@ class Leasing extends CI_Controller{
 
     }
     #ADVANCE PAYMENT PDF
-    function createAdvancePaymentDocsFile($pmt){
+    function createAdvancePaymentDocsFile($pmt)
+    {
         $pdf = new FPDF('p', 'mm', 'A4');
         $pdf->AddPage();
         $pdf->setDisplayMode('fullpage');
@@ -5216,7 +5214,8 @@ class Leasing extends CI_Controller{
 
         return $file_name;
     }
-    public function prepost_old_soa_action($tenant_id, $date = null){
+    public function prepost_old_soa_action($tenant_id, $date = null)
+    {
         $res = $this->prepost_old_soa($tenant_id, $date);
 
         die(
@@ -5225,7 +5224,8 @@ class Leasing extends CI_Controller{
             : 'No invoice preposted!'
         );
     }
-    private function prepost_old_soa($tenant_id, $date = null){
+    private function prepost_old_soa($tenant_id, $date = null)
+    {
         $success = 0;
         $exist = 0;
 
@@ -5290,7 +5290,8 @@ class Leasing extends CI_Controller{
 
         return $success > 0;
     }
-    public function get_managers_key(){
+    public function get_managers_key()
+    {
         $username = $this->sanitize($this->input->post('username'));
         $password = $this->sanitize($this->input->post('password'));
         $for = $this->sanitize($this->input->post('for'));
@@ -5328,7 +5329,8 @@ class Leasing extends CI_Controller{
 
         JSONResponse(['type' => 'error', 'msg' => 'Invalid Credentials!']);
     }
-    public function recon_sys_vs_nav(){
+    public function recon_sys_vs_nav()
+    {
         $data['current_date'] = getCurrentDate();
 
         $data['flashdata'] = $this->session->flashdata('message');
@@ -5340,7 +5342,8 @@ class Leasing extends CI_Controller{
         $this->load->view('leasing/recon_sys_vs_nav');
         $this->load->view('leasing/footer');
     }
-    public function generate_recon_sys_vs_nav_report(){
+    public function generate_recon_sys_vs_nav_report()
+    {
         $store = $this->sanitize($this->input->post('store'));
         $gl_ids = $this->input->post('gl_ids');
         $date_from = $this->sanitize($this->input->post('date_from'));
@@ -5414,7 +5417,8 @@ class Leasing extends CI_Controller{
 
         download_send_headers($file_name, $csv_data);
     }
-    public function recon_sys_vs_bank(){
+    public function recon_sys_vs_bank()
+    {
         $data['current_date'] = getCurrentDate();
 
         $data['flashdata'] = $this->session->flashdata('message');
@@ -5426,7 +5430,8 @@ class Leasing extends CI_Controller{
         $this->load->view('leasing/recon_sys_vs_bank');
         $this->load->view('leasing/footer');
     }
-    public function generate_recon_sys_vs_bank_report(){
+    public function generate_recon_sys_vs_bank_report()
+    {
         //$store      = $this->sanitize($this->input->post('store'));
         //$gl_ids     = $this->input->post('gl_ids');
 
@@ -5512,7 +5517,8 @@ class Leasing extends CI_Controller{
 
         download_send_headers($file_name, $csv_data);
     }
-    public function invoice_override_history(){
+    public function invoice_override_history()
+    {
         $data['current_date'] = getCurrentDate();
 
         $data['flashdata'] = $this->session->flashdata('message');
@@ -5522,14 +5528,16 @@ class Leasing extends CI_Controller{
         $this->load->view('leasing/accounting/invoice_override_history');
         $this->load->view('leasing/footer');
     }
-    public function get_invoice_override_data($tenant_id = ''){
+    public function get_invoice_override_data($tenant_id = '')
+    {
         $tenant_id = $this->sanitize($tenant_id);
 
         $data = $this->app_model->get_invoice_override_data($tenant_id);
 
         JSONResponse($data);
     }
-    function test_date_diff($last_due, $due_date){
+    function test_date_diff($last_due, $due_date)
+    {
         $daylen = 60 * 60 * 24;
         dump($daylen);
         $daysDiff = (strtotime($last_due) - strtotime($due_date)) / $daylen;
@@ -5541,7 +5549,8 @@ class Leasing extends CI_Controller{
         $current_due = strtotime($due_date . '-20 days');
         dump($current_due);
     }
-    function test_date_diff2($last_due, $due_date){
+    function test_date_diff2($last_due, $due_date)
+    {
         $last_due = date_create($last_due);
         $due_date = date_create($due_date);
         $diff = date_diff($due_date, $last_due);
@@ -5561,7 +5570,8 @@ class Leasing extends CI_Controller{
         $current_due = strtotime($due_date[$i] . "-20 days");
         dump($current_due);*/
     }
-    function testpage(){
+    function testpage()
+    {
         //dump(DecimalToWord::convert(1599.6, 'Pesos', 'Centavos'));
         // dump(DecimalToWord::$formatted);
 
@@ -5578,13 +5588,15 @@ class Leasing extends CI_Controller{
             dump('HELLO');
         }
     }
-    public function getAdvanceTransactionNo(){
+    public function getAdvanceTransactionNo()
+    {
         $transactionNo = $this->app_model->getAdvanceTransactionNo(false);
         JSONResponse($transactionNo);
     }
     #------------------------------------------------------ AUTO EXTRACTION ------------------------------------------------------#
     # FOR EXTRACTION CAS TEXT FILE
-    public function generate_RRreports($tenant_id, $posting_date){
+    public function generate_RRreports($tenant_id, $posting_date)
+    {
         $month = $posting_date;
         $month = date('F Y', strtotime($month));
         $store = $this->session->userdata('store_code');
@@ -5750,7 +5762,8 @@ class Leasing extends CI_Controller{
         return $msg;
     }
     #YAWA NING CAS YWAW NING BIR YAWA NI TANAN - IF EVER MAHIMO KAG PROGRAMMER ANING LEASING, AYAW NA PADAYON, LABAD SA ULO RAY MAKUHA NIMO
-    public function generate_ARreports($tenant_id, $posting_date){
+    public function generate_ARreports($tenant_id, $posting_date)
+    {
         $month = $posting_date;
         $month = date('F Y', strtotime($month));
         $store = $this->session->userdata('store_code');
@@ -5899,7 +5912,7 @@ class Leasing extends CI_Controller{
 
                                 $vatDisplayed = false;
 
-                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] =='Other') {
+                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] == 'Other') {
                                     $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>"];
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                     $vatDisplayed = true;
@@ -6160,10 +6173,11 @@ class Leasing extends CI_Controller{
 
         return $msg;
     }
-    public function generate_paymentCollection($tenant_id, $posting_date){
-        $store      = $this->session->userdata('store_code');
-        $post_date  = date('Y-m', strtotime($posting_date));
-        $m          = date('m', strtotime($posting_date));
+    public function generate_paymentCollection($tenant_id, $posting_date)
+    {
+        $store = $this->session->userdata('store_code');
+        $post_date = date('Y-m', strtotime($posting_date));
+        $m = date('m', strtotime($posting_date));
         $Pmtreports = $this->app_model->generate_paymentCollection($post_date, "AND g.tenant_id = '{$tenant_id}'");
 
         $msg = [];
@@ -6182,38 +6196,38 @@ class Leasing extends CI_Controller{
             '12' => '12 - DEC'
         ];
 
-        $REFERENCE  = "";
-        $CRJENTRY   = [];
+        $REFERENCE = "";
+        $CRJENTRY = [];
 
         if (!empty($Pmtreports)) {
             try {
                 foreach ($Pmtreports as $key => $value) {
-                    $DATE           = date('m/d/Y', strtotime($value->posting_date));
-                    $SOA            = substr($value->doc_no, 0, 3);
-                    $DOCUMENT       = $value->doc_no;
-                    $TRADENAME      = substr($value->trade_name, 0, 41);
-                    $AMOUNT         = str_replace('-', '', $value->amount);
-                    $BATCHNAME      = ($value->tag == 'Preop') ? 'ACK_RCPT' : 'OFCL_RCPT';
-                    $TENDERTYPE     = $this->app_model->getPaymetSchemeDetails($value->doc_no, $value->tenant_id);
-                    $bankAcroname   = $this->app_model->getBankAcroname($value->bank_code);
-                    $TTYPE          = "";
+                    $DATE = date('m/d/Y', strtotime($value->posting_date));
+                    $SOA = substr($value->doc_no, 0, 3);
+                    $DOCUMENT = $value->doc_no;
+                    $TRADENAME = substr($value->trade_name, 0, 41);
+                    $AMOUNT = str_replace('-', '', $value->amount);
+                    $BATCHNAME = ($value->tag == 'Preop') ? 'ACK_RCPT' : 'OFCL_RCPT';
+                    $TENDERTYPE = $this->app_model->getPaymetSchemeDetails($value->doc_no, $value->tenant_id);
+                    $bankAcroname = $this->app_model->getBankAcroname($value->bank_code);
+                    $TTYPE = "";
 
                     if ($SOA === "SOA") {
                         if ($REFERENCE !== $value->doc_no) {
                             if ($value->gl_accountID !== '7') {
-                                $line_no    = 10000;
-                                $CRJENTRY   = [];
-                                $DOCUMENT   = (in_array($value->gl_accountID, ['22', '29'])) ? "OC{$DOCUMENT}" : $DOCUMENT;
-                                $TENANTID   = (in_array($value->gl_accountID, ['22', '29'])) ? str_replace('-', '-OC-', $value->tenant_id) : $value->tenant_id;
+                                $line_no = 10000;
+                                $CRJENTRY = [];
+                                $DOCUMENT = (in_array($value->gl_accountID, ['22', '29'])) ? "OC{$DOCUMENT}" : $DOCUMENT;
+                                $TENANTID = (in_array($value->gl_accountID, ['22', '29'])) ? str_replace('-', '-OC-', $value->tenant_id) : $value->tenant_id;
                                 $CRJENTRY[] = ["CASHRCPT<|>{$line_no}<|>G/L Account<|>10.20.01.01.02.01<|>{$DATE}<|>{$value->document_type}<|>{$DOCUMENT}<|>{$TRADENAME}<|>{$AMOUNT}<|>{$value->company_code}<|>{$value->department_code}<|>CASHRECJNL<|>{$BATCHNAME}<|><|><|><|><|><|>"];
                                 $line_no += 10000;
                                 $CRJENTRY[] = ["CASHRCPT<|>{$line_no}<|>Customer<|>{$TENANTID}<|>{$DATE}<|>{$value->document_type}<|>{$DOCUMENT}<|>{$TRADENAME}<|>({$AMOUNT})<|>{$value->company_code}<|>{$value->department_code}<|>CASHRECJNL<|>{$BATCHNAME}<|><|><|><|><|><|>"];
                                 $line_no += 10000;
 
                                 if ($value->tag == 'Preop') {
-                                    $invoice            = $this->app_model->getPreopInvoice($value->cas_doc_no);
-                                    $company_code       = $this->session->userdata('company_code');
-                                    $department_code    = $this->session->userdata('dept_code');
+                                    $invoice = $this->app_model->getPreopInvoice($value->cas_doc_no);
+                                    $company_code = $this->session->userdata('company_code');
+                                    $department_code = $this->session->userdata('dept_code');
                                     if (!empty($invoice)) {
                                         $CRJENTRY[] = ["CASHRCPT<|>{$line_no}<|>Preop<|>{$invoice->cas_doc_no}<|><|><|><|><|>$invoice->amount<|>$company_code<|>$department_code<|>CASHRECJNL<|>ACK_RCPT<|><|><|><|><|><|>"];
                                     }
@@ -6225,19 +6239,19 @@ class Leasing extends CI_Controller{
                                 }
 
                                 #EXTRACT HERE
-                                $TOUPDATE1      = "doc_no = '$value->doc_no' AND ref_no = '$value->ref_no' AND (export_batch_code IS NULL OR export_batch_code = '')";
-                                $TOUPDATE2      = "doc_no = '$value->doc_no' AND gl_accountID = '7' AND (export_batch_code IS NULL OR export_batch_code = '')";
-                                $exp_batch_no   = $this->app_model->generate_ExportNo(true);
+                                $TOUPDATE1 = "doc_no = '$value->doc_no' AND ref_no = '$value->ref_no' AND (export_batch_code IS NULL OR export_batch_code = '')";
+                                $TOUPDATE2 = "doc_no = '$value->doc_no' AND gl_accountID = '7' AND (export_batch_code IS NULL OR export_batch_code = '')";
+                                $exp_batch_no = $this->app_model->generate_ExportNo(true);
 
                                 # UPDATE DOCUMENT NUMBER AND REFERENCE NUMBER
                                 $this->app_model->updateEntryAsExported('subsidiary_ledger', ['export_batch_code' => $exp_batch_no], $TOUPDATE1);
                                 $this->app_model->updateEntryAsExported('subsidiary_ledger', ['export_batch_code' => $exp_batch_no], $TOUPDATE2);
                                 # UPDATE DOCUMENT NUMBER AND REFERENCE NUMBER
 
-                                $file_name  = "PC_{$BATCHNAME}_{$TENANTID}_{$post_date}-{$exp_batch_no}.crj";
+                                $file_name = "PC_{$BATCHNAME}_{$TENANTID}_{$post_date}-{$exp_batch_no}.crj";
                                 $targetPath = getcwd() . '/assets/for_cas/payment/' . $monthfolder["$m"] . '/' . $file_name;
                                 # $targetPath = '\\\172.16.170.10/pos-sales/LEASING/' . $store . '/payment/' . $monthfolder["$m"] . '/' .$file_name;
-                                $data       = arrayToString($CRJENTRY);
+                                $data = arrayToString($CRJENTRY);
 
                                 $this->app_model->logExportForNav($exp_batch_no, $post_date, $data, 'Payment', $file_name);
 
@@ -6403,7 +6417,8 @@ class Leasing extends CI_Controller{
 
         return $msg;
     }
-    public function generate_PreopReports($tenant_id, $posting_date){
+    public function generate_PreopReports($tenant_id, $posting_date)
+    {
         $month = $posting_date;
         $month = date('F Y', strtotime($month));
         $store = $this->session->userdata('store_code');
@@ -6560,7 +6575,8 @@ class Leasing extends CI_Controller{
 
     #------------------------------------------------------ MANUAL EXTRACTION ------------------------------------------------------#
     # FOR EXTRACTION CAS TEXT FILE
-    public function generate_RRreports_manual(){
+    public function generate_RRreports_manual()
+    {
         $rrData = $this->input->post(null);
         $month = $rrData['month'];
         $month = date('F Y', strtotime($month));
@@ -6739,14 +6755,15 @@ class Leasing extends CI_Controller{
         echo json_encode($msg);
     }
     #YAWA NING CAS YWAW NING BIR YAWA NI TANAN - IF EVER MAHIMO KAG PROGRAMMER ANING LEASING, AYAW NA PADAYON, LABAD SA ULO RAY MAKUHA NIMO
-    public function generate_ARreports_manual(){
-        $arData         = $this->input->post(null);
-        $month          = $arData['month'];
-        $month          = date('F Y', strtotime($month));
-        $store          = $this->session->userdata('store_code');
+    public function generate_ARreports_manual()
+    {
+        $arData = $this->input->post(null);
+        $month = $arData['month'];
+        $month = date('F Y', strtotime($month));
+        $store = $this->session->userdata('store_code');
         $upload_by_type = $arData['upload_by_type'];
-        $tntID          = "AND sl.tenant_id LIKE '%{$arData['searchInput']}%'";
-        $docNumber      = "AND sl.doc_no LIKE '%{$arData['searchInput']}%'";
+        $tntID = "AND sl.tenant_id LIKE '%{$arData['searchInput']}%'";
+        $docNumber = "AND sl.doc_no LIKE '%{$arData['searchInput']}%'";
 
         switch ($upload_by_type) {
             case 'Tenant ID':
@@ -6785,17 +6802,17 @@ class Leasing extends CI_Controller{
                 foreach ($ARreports['data'] as $key => $value) {
                     $checkBalance = $this->app_model->checkBalance($value['doc_no'], $value['posting_date']);
                     if ($checkBalance->debit > 0) {
-                        $posting_date   = date('m/d/Y', strtotime(date('Y-m-t', strtotime($month))));
-                        $company_code   = $this->session->userdata('company_code');
-                        $dept_code      = $this->session->userdata('dept_code');
-                        $date           = new DateTime();
-                        $timeStamp      = $date->getTimestamp();
-                        $doc_no         = ($value['cas_doc_no'] != '') ? $value['cas_doc_no'] : 'OLS' . date('mdy', strtotime(date('Y-m-t', strtotime($month))));
-                        $report_data    = $this->app_model->generate_ARreports($month, "AND sl.tenant_id LIKE '%{$value['tenant_id']}%'");
-                        $data           = $report_data['data'];
-                        $doc_nos        = $report_data['doc_nos'];
-                        $file_data      = '';
-                        $externalDocNo  = '';
+                        $posting_date = date('m/d/Y', strtotime(date('Y-m-t', strtotime($month))));
+                        $company_code = $this->session->userdata('company_code');
+                        $dept_code = $this->session->userdata('dept_code');
+                        $date = new DateTime();
+                        $timeStamp = $date->getTimestamp();
+                        $doc_no = ($value['cas_doc_no'] != '') ? $value['cas_doc_no'] : 'OLS' . date('mdy', strtotime(date('Y-m-t', strtotime($month))));
+                        $report_data = $this->app_model->generate_ARreports($month, "AND sl.tenant_id LIKE '%{$value['tenant_id']}%'");
+                        $data = $report_data['data'];
+                        $doc_nos = $report_data['doc_nos'];
+                        $file_data = '';
+                        $externalDocNo = '';
 
                         if (!empty($data)) {
                             $line_no = 10000;
@@ -6834,7 +6851,8 @@ class Leasing extends CI_Controller{
                                 return array_search($a['gl_code'], $order) - array_search($b['gl_code'], $order);
                             });
 
-                            function formatBillingPeriod($billingPeriod){
+                            function formatBillingPeriod($billingPeriod)
+                            {
                                 error_log("Original billing period: $billingPeriod");
 
                                 // Flexible regex to capture variations in format and capitalization
@@ -6876,9 +6894,9 @@ class Leasing extends CI_Controller{
                                 ");
 
                                 // Initialize variables
-                                $OC_amount      = 0; // Total Other Charges
-                                $amount_noVat   = 0; // Amount without VAT
-                                $vat_amount     = 0; // VAT (12%)
+                                $OC_amount = 0; // Total Other Charges
+                                $amount_noVat = 0; // Amount without VAT
+                                $vat_amount = 0; // VAT (12%)
 
                                 foreach ($otherCharges_query->result() as $row) {
                                     $OC_amount += floatval($row->debit); // Sum up all debit values
@@ -6893,25 +6911,25 @@ class Leasing extends CI_Controller{
                                 $vat_amount = number_format($amount_noVat * 0.12, 2, '.', '');
 
 
-                                $pDate                  = date('F Y', strtotime($result['posting_date']));
-                                $tenantID               = str_replace('-', '-OC-', $result['tenant_id']);
-                                $tradeName              = substr($result['trade_name'], 0, 36);
-                                $glAccountName          = isset($glCodeMapping[$result['gl_code']]) ? $glCodeMapping[$result['gl_code']] : $result['gl_account'];
-                                $dueDateFormatted       = date('M d, Y', strtotime($result['due_date']));
+                                $pDate = date('F Y', strtotime($result['posting_date']));
+                                $tenantID = str_replace('-', '-OC-', $result['tenant_id']);
+                                $tradeName = substr($result['trade_name'], 0, 36);
+                                $glAccountName = isset($glCodeMapping[$result['gl_code']]) ? $glCodeMapping[$result['gl_code']] : $result['gl_account'];
+                                $dueDateFormatted = date('M d, Y', strtotime($result['due_date']));
                                 $formattedBillingPeriod = formatBillingPeriod($soa->billing_period);
-                                $vatDisplayed           = false;
+                                $vatDisplayed = false;
 
-                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] === 'Other') {//A/R Non Trade
+                                if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] === 'Other') { //A/R Non Trade
                                     array_shift($rows);
                                     $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                     $vatDisplayed = true;
-                                    $line_no += 10000; 
-                                } elseif ($result['gl_code'] == '10.10.01.06.05') {//Creditable WHT Receivable
+                                    $line_no += 10000;
+                                } elseif ($result['gl_code'] == '10.10.01.06.05') { //Creditable WHT Receivable
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>{$result['gl_code']}<|>{$posting_date}<|><|>{$doc_no}<|>{$glAccountName}<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}|><|>",];
                                     // Increment line number for the new row
                                     $line_no += 10000;
-                                } elseif ($result['gl_code'] == '20.80.01.08.07') {//MI-Charges
+                                } elseif ($result['gl_code'] == '20.80.01.08.07') { //MI-Charges
                                     $amawnt = str_replace('-', '', $result['amount']);
                                     $invoicing = $this->db->query("SELECT * FROM invoicing WHERE balance = '{$amawnt}' AND doc_no = '{$result['doc_no']}'")->row();
                                     // $amount_noVat = round($amawnt / 1.12, 2); // Amount without VAT
@@ -7150,7 +7168,8 @@ class Leasing extends CI_Controller{
 
         echo json_encode($msg);
     }
-    public function generate_paymentCollection_manual(){
+    public function generate_paymentCollection_manual()
+    {
         $pData = $this->input->post(null);
         $store = $this->session->userdata('store_code');
         $upload_by_type = $pData['upload_by_type'];
@@ -7455,7 +7474,8 @@ class Leasing extends CI_Controller{
 
         echo json_encode($msg);
     }
-    public function generate_PreopReports_manual(){
+    public function generate_PreopReports_manual()
+    {
         $arData = $this->input->post(null);
         $month = $arData['month'];
         $month = date('F Y', strtotime($month));
@@ -7633,7 +7653,8 @@ class Leasing extends CI_Controller{
     }
     #------------------------------------------------------ MANUAL EXTRACTION ------------------------------------------------------#
 
-    public function RR_reports_internal(){
+    public function RR_reports_internal()
+    {
         if ($this->session->userdata('leasing_logged_in')) {
             $data = [
                 'flashdata' => $this->session->flashdata('message'),
@@ -7647,7 +7668,8 @@ class Leasing extends CI_Controller{
             redirect('ctrl_leasing/');
         }
     }
-    public function AR_reports_internal(){
+    public function AR_reports_internal()
+    {
         if ($this->session->userdata('leasing_logged_in')) {
             $data = [
                 'flashdata' => $this->session->flashdata('message'),
@@ -7661,7 +7683,8 @@ class Leasing extends CI_Controller{
             redirect('ctrl_leasing/');
         }
     }
-    public function collection_reports_internal(){
+    public function collection_reports_internal()
+    {
         if ($this->session->userdata('leasing_logged_in')) {
             $data = [
                 'flashdata' => $this->session->flashdata('message'),
@@ -7676,7 +7699,8 @@ class Leasing extends CI_Controller{
         }
     }
     #--------------------------------------------------------- CAS END
-    public function saveORNumber(){
+    public function saveORNumber()
+    {
         $data = $this->input->post(null);
         $payment_scheme = [];
 
@@ -7724,7 +7748,8 @@ class Leasing extends CI_Controller{
             ]);
         }
     }
-    public function soaReprintNew(){
+    public function soaReprintNew()
+    {
         $file = $this->uri->segment('3');
         $soano = $this->uri->segment('4');
         $password = $this->input->post('password');
@@ -7867,7 +7892,8 @@ class Leasing extends CI_Controller{
     // }
     // ================================ gwaps ===========================================
 
-    public function paymentReprintNew(){
+    public function paymentReprintNew()
+    {
         $file = $this->uri->segment('3');
         $docno = $this->uri->segment('4');
         $password = $this->input->post('password');
@@ -7934,7 +7960,8 @@ class Leasing extends CI_Controller{
     }
     // ================================ gwaps ends ======================================
 
-    public function uploadToCasTesting(){
+    public function uploadToCasTesting()
+    {
         // $live     = $this->load->database('live', true);
         $cas = $this->load->database('agc_cas', true);
         $pms = $this->app_model->tenant_details('6466');
@@ -7957,7 +7984,8 @@ class Leasing extends CI_Controller{
         // dump($pms);
         // dump($prospect);
     }
-    public function uploadToCCM(){
+    public function uploadToCCM()
+    {
         if ($tender_typeCode == '2' && $this->session->userdata('cfs_logged_in')) {
             $this->load->model('ccm_model');
 
@@ -7988,7 +8016,8 @@ class Leasing extends CI_Controller{
             $this->ccm_model->insert('checks', $ccm_data);
         }
     }
-    public function generate_URIClosing(){
+    public function generate_URIClosing()
+    {
         $tenant_id = 'ICM-LT000001';
         $posting_date = '2024-07-31';
         $store = $this->session->userdata('store_code');
@@ -8140,7 +8169,8 @@ class Leasing extends CI_Controller{
                 break;
         }
     }
-    public function docs(){
+    public function docs()
+    {
         $this->load->view('docs/docs');
     }
 
