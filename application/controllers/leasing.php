@@ -7118,7 +7118,7 @@ class Leasing extends CI_Controller
                                             break;
                                     }
                                     $customDescription = '';
-                                } else {
+                                } else {//MI-Charges
                                     $amount = str_replace('-', '', $result['amount']);
                                     // $nv_amount = round($amount / 1.12, 2);
                                     $nv_amount = number_format($amount / 1.12, 2, '.', '');
