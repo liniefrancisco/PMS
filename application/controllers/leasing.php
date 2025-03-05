@@ -6916,8 +6916,11 @@ class Leasing extends CI_Controller
                                 $vatDisplayed           = false;
 
                                 if (in_array($result['gl_code'], ['10.10.01.03.03', '10.10.01.03.04']) && $result['tag'] === 'Other') { //A/R Non Trade
-                                    array_shift($rows);
-                                    $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$result['amount']}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
+                                    $invoicing  = $this->db->query("SELECT * FROM invoicing WHERE doc_no = '{$soa->soa_no}'")->row();//Added by Linie
+                                    $nv_penalty = number_format($invoicing->actual_amt / 1.12, 2, '.', '');//Added by Linie
+                                    $oc_amount  = number_format($result['amount'] + $nv_penalty, 2, '.', '');//Added by Linie
+                                    array_shift($rows);//Added by Linie
+                                    $rows[] = ["GENERAL<|>{$line_no}<|>Customer<|>{$tenantID}<|>{$posting_date}<|><|>{$doc_no}<|>{$tradeName}-Other Charges<|>{$oc_amount}<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                     $rows[] = ["GENERAL<|>{$line_no}<|>G/L Account<|>10.20.01.01.01.14<|>{$posting_date}<|><|>{$doc_no}<|>VAT Output<|>({$vat_amount})<|>{$company_code}<|>{$dept_code}<|>GENJNL<|>SERVICEINV<|><|><|><|>{$formattedBillingPeriod};{$dueDateFormatted}<|><|>",];
                                     $vatDisplayed = true;
                                     $line_no += 10000;
