@@ -2649,52 +2649,51 @@ class Leasing extends CI_Controller
 
         JSONResponse(compact('banks', 'uft_no', 'ip_no', 'stores'));
     }
-    public function save_payment()
-    {
+    public function save_payment(){
         /*=====================  SETTING VALUES STARTS HERE ==========================*/
-        $tenancy_type = $this->sanitize($this->input->post('tenancy_type'));
-        $trade_name = $this->sanitize($this->input->post('trade_name'));
-        $tenant_id = $this->sanitize($this->input->post('tenant_id'));
-        $contract_no = $this->sanitize($this->input->post('contract_no'));
-        $tenant_address = $this->sanitize($this->input->post('tenant_address'));
-        $payment_date = $this->sanitize($this->input->post('payment_date'));
-        $soa_no = $this->sanitize($this->input->post('soa_no'));
-        $billing_period = $this->sanitize($this->input->post('billing_period'));
-        $remarks = $this->sanitize($this->input->post('remarks'));
-        $tender_typeCode = $this->sanitize($this->input->post('tender_typeCode'));
-        $receipt_no = $this->sanitize($this->input->post('receipt_no'));
-        $amount_paid = $this->sanitize($this->input->post('amount_paid'));
-        $receipt_type = $this->sanitize($this->input->post('receipt_type'));
-        $svi_no = $this->input->post('svi_no');
-        $tender_amount = $amount_paid;
-        // $receipt_no    = $this->app_model->generate_paymentSlipNo();
-        $payment_docs = $this->input->post('payment_docs');
-        $transaction_date = getCurrentDate();
-        $payment_date = date('Y-m-d', strtotime($payment_date));
+        $tenancy_type       = $this->sanitize($this->input->post('tenancy_type'));
+        $trade_name         = $this->sanitize($this->input->post('trade_name'));
+        $tenant_id          = $this->sanitize($this->input->post('tenant_id'));
+        $contract_no        = $this->sanitize($this->input->post('contract_no'));
+        $tenant_address     = $this->sanitize($this->input->post('tenant_address'));
+        $payment_date       = $this->sanitize($this->input->post('payment_date'));
+        $soa_no             = $this->sanitize($this->input->post('soa_no'));
+        $billing_period     = $this->sanitize($this->input->post('billing_period'));
+        $remarks            = $this->sanitize($this->input->post('remarks'));
+        $tender_typeCode    = $this->sanitize($this->input->post('tender_typeCode'));
+        $receipt_no         = $this->sanitize($this->input->post('receipt_no'));
+        $amount_paid        = $this->sanitize($this->input->post('amount_paid'));
+        $receipt_type       = $this->sanitize($this->input->post('receipt_type'));
+        $svi_no             = $this->input->post('svi_no');
+        $tender_amount      = $amount_paid;
+        // $receipt_no      = $this->app_model->generate_paymentSlipNo();
+        $payment_docs       = $this->input->post('payment_docs');
+        $transaction_date   = getCurrentDate();
+        $payment_date       = date('Y-m-d', strtotime($payment_date));
         //IF NOT INTERNAL PAYMENT
-        $bank_code = $this->sanitize($this->input->post('bank_code'));
-        $bank_name = $this->sanitize($this->input->post('bank_name'));
-        $payor = $this->sanitize($this->input->post('payor'));
-        $payee = $this->sanitize($this->input->post('payee'));
+        $bank_code          = $this->sanitize($this->input->post('bank_code'));
+        $bank_name          = $this->sanitize($this->input->post('bank_name'));
+        $payor              = $this->sanitize($this->input->post('payor'));
+        $payee              = $this->sanitize($this->input->post('payee'));
         //IF INTERNAL PAYMENT
-        $ip_store_code = $this->sanitize($this->input->post('store_code'));
-        $ip_store_name = $this->sanitize($this->input->post('store_name'));
+        $ip_store_code      = $this->sanitize($this->input->post('store_code'));
+        $ip_store_name      = $this->sanitize($this->input->post('store_name'));
         //IF CHECK
-        $check_type = $this->sanitize($this->input->post('check_type'));
-        $bank_code = $this->sanitize($this->input->post('bank_code'));
-        $account_no = $this->sanitize($this->input->post('account_no'));
-        $account_name = $this->sanitize($this->input->post('account_name'));
-        $check_no = $this->sanitize($this->input->post('check_no'));
-        $check_date = $this->sanitize($this->input->post('check_date'));
-        $check_due_date = $this->sanitize($this->input->post('check_due_date'));
-        $expiry_date = $this->sanitize($this->input->post('expiry_date'));
-        $check_class = $this->sanitize($this->input->post('check_class'));
-        $check_category = $this->sanitize($this->input->post('check_category'));
-        $customer_name = $this->sanitize($this->input->post('customer_name'));
-        $check_bank = $this->sanitize($this->input->post('check_bank'));
-        $check_date = date('Y-m-d', strtotime($check_date));
-        $check_due_date = date('Y-m-d', strtotime($check_due_date));
-        $expiry_date = date('Y-m-d', strtotime($expiry_date));
+        $check_type         = $this->sanitize($this->input->post('check_type'));
+        $bank_code          = $this->sanitize($this->input->post('bank_code'));
+        $account_no         = $this->sanitize($this->input->post('account_no'));
+        $account_name       = $this->sanitize($this->input->post('account_name'));
+        $check_no           = $this->sanitize($this->input->post('check_no'));
+        $check_date         = $this->sanitize($this->input->post('check_date'));
+        $check_due_date     = $this->sanitize($this->input->post('check_due_date'));
+        $expiry_date        = $this->sanitize($this->input->post('expiry_date'));
+        $check_class        = $this->sanitize($this->input->post('check_class'));
+        $check_category     = $this->sanitize($this->input->post('check_category'));
+        $customer_name      = $this->sanitize($this->input->post('customer_name'));
+        $check_bank         = $this->sanitize($this->input->post('check_bank'));
+        $check_date         = date('Y-m-d', strtotime($check_date));
+        $check_due_date     = date('Y-m-d', strtotime($check_due_date));
+        $expiry_date        = date('Y-m-d', strtotime($expiry_date));
         /*=====================  SETTING VALUES ENDS HERE ==========================*/
 
         /*=====================  VALIDATION STARTS HERE ==========================*/
@@ -2768,14 +2767,14 @@ class Leasing extends CI_Controller
         }
 
         $tender_types = [
-            '1' => 'Cash',
-            '2' => 'Check',
-            '3' => 'Bank to Bank',
-            '4' => 'AR-Employee',
-            '11' => 'Unidentified Fund Transfer',
-            '12' => 'Internal Payment',
-            '80' => 'JV payment - Business Unit',
-            '81' => 'JV payment - Subsidiary',
+            '1'     => 'Cash',
+            '2'     => 'Check',
+            '3'     => 'Bank to Bank',
+            '4'     => 'AR-Employee',
+            '11'    => 'Unidentified Fund Transfer',
+            '12'    => 'Internal Payment',
+            '80'    => 'JV payment - Business Unit',
+            '81'    => 'JV payment - Subsidiary',
         ];
 
         $tender_typeDesc = $tender_types[$tender_typeCode];

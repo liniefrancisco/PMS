@@ -216,9 +216,6 @@ window.myApp.controller(
             doc_no: invoice.doc_no,
             svi_no: invoice.svi_no || ""
           }));
-          console.log('application:',$scope.pmt.application);
-          console.log('selected_docs:',$scope.pmt.selected_docs);
-          console.log('payment_docs:',$scope.payment_docs);
           $scope.$apply();
         }
       );
